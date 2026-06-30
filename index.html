@@ -12,9 +12,9 @@
     --muted:#a89a82;--accent:#d4742a;--green:#6ba368;--red:#c25b4e;--blue:#5b8aa6;--radius:14px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',system-ui,sans-serif}
   body{overscroll-behavior-y:contain}
-  h1,h2,h3{font-family:Georgia,'Times New Roman',serif;font-weight:600;margin:0}
+  h1,h2,h3{font-family:inherit;font-weight:700;margin:0}
   button{font-family:inherit;cursor:pointer;border:none}
   input,textarea,select{font-family:inherit}
 
@@ -81,7 +81,7 @@
   .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
   .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
   .kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-  .kpi .val{font-size:22px;font-weight:700;font-family:Georgia,serif;margin-top:4px}
+  .kpi .val{font-size:22px;font-weight:700;font-family:inherit;margin-top:4px}
   .kpi .val.accent{color:var(--accent)}.kpi .val.green{color:var(--green)}.kpi .val.red{color:var(--red)}
 
   .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
@@ -145,7 +145,7 @@
 
 <!-- LOGIN -->
 <div id="login" style="display:none">
-  <div class="badge">🏚️</div>
+  <div class="badge">🏠</div>
   <h1>Dziennik Remontu</h1>
   <p id="loginSub">Zaloguj się, aby otworzyć swój dom</p>
   <div class="card">
@@ -277,7 +277,7 @@ async function loadAll(){
 }
 
 /* ============ POMOCNICZE ============ */
-function money(n){ return (Number(n)||0).toLocaleString('pl-PL')+' zł'; }
+function money(n){ return (Number(n)||0).toLocaleString('sv-SE')+' kr'; }
 function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'short',year:'numeric'}); }
 function priLabel(p){ return p==='high'?'Wysoki':p==='mid'?'Średni':'Niski'; }
 function priClass(p){ return p==='high'?'p-high':p==='mid'?'p-mid':'p-low'; }
@@ -412,14 +412,14 @@ function stageOptions(sel){ let o=`<option value="">— bez etapu —</option>`;
 /* ---- ETAP ---- */
 function editStage(id){
   const s=id?stageById(id):{name:'',priority:'mid',budget:'',color:'#d4742a',note:''};
-  const cs=['#c25b4e','#d4742a','#e0b463','#6ba368','#5b8aa6','#9b6bb3','#b3956b'];
+  const cs=['#c25b4e','#d4742a','#e0b463','#f2d24a','#6ba368','#3f9b5e','#3fa68a','#5b8aa6','#4a7ac9','#6b6bd1','#9b6bb3','#c264a8','#e0608e','#b3956b','#8a6a4a','#7d8a99','#5a6b7a','#1c2e1c'];
   sheet.innerHTML=`<h2>${id?'Edytuj etap':'Nowy etap'}</h2>
     <div class="field"><label>Nazwa etapu</label><input id="f_name" value="${esc(s.name)}" placeholder="np. Dach, Elektryka"></div>
     <div class="field"><label>Priorytet</label><div class="seg" id="f_pri">
       <button data-v="high" class="${s.priority==='high'?'on':''}" onclick="segPick(this,'f_pri')">Wysoki</button>
       <button data-v="mid" class="${s.priority==='mid'?'on':''}" onclick="segPick(this,'f_pri')">Średni</button>
       <button data-v="low" class="${s.priority==='low'?'on':''}" onclick="segPick(this,'f_pri')">Niski</button></div></div>
-    <div class="field"><label>Budżet (zł)</label><input id="f_budget" type="number" inputmode="numeric" value="${s.budget}" placeholder="0"></div>
+    <div class="field"><label>Budżet (SEK)</label><input id="f_budget" type="number" inputmode="numeric" value="${s.budget}" placeholder="0"></div>
     <div class="field"><label>Kolor</label><div class="row" id="f_color" style="gap:8px;flex-wrap:wrap">
       ${cs.map(c=>`<div onclick="colorPick(this,'${c}')" style="width:34px;height:34px;border-radius:8px;background:${c};border:3px solid ${s.color===c?'#fff':'transparent'}"></div>`).join('')}</div></div>
     <div class="field"><label>Notatka</label><textarea id="f_note" rows="2" placeholder="opis prac...">${esc(s.note)}</textarea></div>
@@ -504,13 +504,13 @@ function editCost(id){
   pendingFile=null;
   sheet.innerHTML=`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
-    <div class="field"><label>Kwota (zł)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
+    <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
     <div class="field"><label>Etap</label><select id="c_stage">${stageOptions(c.stage_id)}</select></div>
     <div class="field"><label>Data</label><input id="c_date" type="date" value="${c.date}"></div>
     <div class="field"><label>Notatka</label><textarea id="c_note" rows="2" placeholder="dostawca, gwarancja, uwagi...">${esc(c.note||'')}</textarea></div>
     <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
-      <label class="upload">📎 Wybierz lub zrób zdjęcie
-        <input type="file" accept="image/*,application/pdf" capture="environment" style="display:none" onchange="handleFile(this)"></label>
+      <label class="upload">📎 Wybierz zdjęcie lub zrób nowe
+        <input type="file" accept="image/*,application/pdf" style="display:none" onchange="handleFile(this)"></label>
       <div id="filePreview">${c.file_path?`<div class="filechip">📎 obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
     <div class="sheet-actions">${id?`<button class="btn-del" onclick="delCost('${id}')">Usuń</button>`:''}
       <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
@@ -523,7 +523,7 @@ function handleFile(input){
   sheet.dataset.keepFile='0';
   if(file.type.startsWith('image')){
     compressImage(file,(blob,url)=>{ pendingFile={blob,type:'image',name:file.name.replace(/\.\w+$/,'.jpg')};
-      document.getElementById('filePreview').innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">🖼️ ${esc(file.name)}<span class="x" onclick="clearFile()">✕</span></div>`; });
+      document.getElementById('filePreview').innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">🖼️ ${esc(file.name)} (${(blob.size/1024).toFixed(0)} KB)<span class="x" onclick="clearFile()">✕</span></div>`; });
   }else if(file.type==='application/pdf'){
     if(file.size>4*1024*1024)return showToast('PDF zbyt duży (max 4MB)');
     pendingFile={blob:file,type:'pdf',name:file.name};
@@ -533,11 +533,20 @@ function handleFile(input){
 function clearFile(){ pendingFile=null; sheet.dataset.keepFile='0'; document.getElementById('filePreview').innerHTML=''; }
 function compressImage(file,cb){
   const img=new Image(),r=new FileReader();
-  r.onload=e=>{ img.onload=()=>{ const max=1280; let{width,height}=img;
+  r.onload=e=>{ img.onload=()=>{
+    const max=1080; let{width,height}=img;
     if(width>max||height>max){ if(width>height){height=height*max/width;width=max;}else{width=width*max/height;height=max;} }
     const cv=document.createElement('canvas'); cv.width=width; cv.height=height;
     cv.getContext('2d').drawImage(img,0,0,width,height);
-    cv.toBlob(b=>cb(b,URL.createObjectURL(b)),'image/jpeg',0.7); }; img.src=e.target.result; };
+    const targetKB=300;
+    function tryQuality(q){
+      cv.toBlob(b=>{
+        if(b.size/1024>targetKB && q>0.35){ tryQuality(q-0.1); }
+        else cb(b,URL.createObjectURL(b));
+      },'image/jpeg',q);
+    }
+    tryQuality(0.7);
+  }; img.src=e.target.result; };
   r.readAsDataURL(file);
 }
 async function saveCost(id){
