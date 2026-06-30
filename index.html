@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#14110e">
+<title>Dziennik Remontu</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --bg:#14110e;--panel:#1f1b16;--panel-2:#292319;--line:#3a3127;--ink:#f2ebdd;
+    --muted:#a89a82;--accent:#d4742a;--green:#6ba368;--red:#c25b4e;--blue:#5b8aa6;--radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+  body{overscroll-behavior-y:contain}
+  h1,h2,h3{font-family:Georgia,'Times New Roman',serif;font-weight:600;margin:0}
+  button{font-family:inherit;cursor:pointer;border:none}
+  input,textarea,select{font-family:inherit}
+
+  #login{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:24px;gap:14px}
+  #login .badge{font-size:52px}
+  #login h1{font-size:28px;letter-spacing:.5px}
+  #login p{color:var(--muted);margin:0 0 6px;text-align:center;font-size:14px}
+  #login .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .field input,.field textarea,.field select{background:var(--panel-2);border:1px solid var(--line);
+    color:var(--ink);border-radius:10px;padding:12px;font-size:16px;width:100%}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .btn-primary{background:var(--accent);color:#1a0f06;font-weight:700;padding:13px;border-radius:10px;font-size:16px}
+  .btn-primary:active{transform:scale(.98)}
+  .btn-primary:disabled{opacity:.6}
+  .err{color:var(--red);font-size:13px;text-align:center;min-height:18px}
+  .hint{color:var(--muted);font-size:12px;text-align:center;line-height:1.5;max-width:340px}
+  .linkbtn{background:none;color:var(--accent);font-size:13px;text-decoration:underline;padding:4px}
+
+  #setup{position:fixed;inset:0;background:var(--bg);z-index:100;display:none;flex-direction:column;
+    padding:24px;gap:14px;overflow-y:auto}
+  #setup .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;max-width:440px;margin:0 auto;width:100%}
+  #setup code{background:var(--panel-2);padding:2px 6px;border-radius:5px;font-size:13px;word-break:break-all}
+  #setup ol{padding-left:20px;line-height:1.7;font-size:14px;color:var(--muted)}
+  #setup ol b{color:var(--ink)}
+
+  #app{display:none;padding-bottom:78px}
+  header.top{position:sticky;top:0;z-index:20;background:rgba(20,17,14,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+  header.top h1{font-size:19px}
+  header.top .sub{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .icon-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);width:38px;height:38px;
+    border-radius:10px;font-size:17px;display:grid;place-items:center}
+  main{padding:16px;max-width:760px;margin:0 auto}
+
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  nav.tabs button{background:none;color:var(--muted);font-size:10px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;padding:6px 2px;border-radius:10px}
+  nav.tabs button .ic{font-size:20px}
+  nav.tabs button.active{color:var(--accent)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{justify-content:space-between}
+  .muted{color:var(--muted)}.small{font-size:12px}
+  .pill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;border:1px solid var(--line);white-space:nowrap}
+  .pill.p-high{background:#3a1c18;color:#e88;border-color:#5a2a24}
+  .pill.p-mid{background:#3a2e16;color:#e0b463;border-color:#5a4824}
+  .pill.p-low{background:#1c2e1c;color:#8fc98c;border-color:#2c4a2c}
+  .barwrap{height:8px;background:var(--panel-2);border-radius:20px;overflow:hidden;margin-top:8px}
+  .bar{height:100%;background:var(--accent);border-radius:20px;transition:width .4s}
+  .bar.over{background:var(--red)}.bar.ok{background:var(--green)}
+  .fab{position:fixed;right:18px;bottom:90px;z-index:35;width:56px;height:56px;border-radius:50%;
+    background:var(--accent);color:#1a0f06;font-size:30px;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.5)}
+  .fab:active{transform:scale(.94)}
+  .stagecard{cursor:pointer}.stagecard:active{background:var(--panel-2)}
+  .stage-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px}
+  .empty .big{font-size:40px;margin-bottom:10px}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .kpi .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .kpi .val{font-size:22px;font-weight:700;font-family:Georgia,serif;margin-top:4px}
+  .kpi .val.accent{color:var(--accent)}.kpi .val.green{color:var(--green)}.kpi .val.red{color:var(--red)}
+
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:none;align-items:flex-end}
+  .modal.open{display:flex}
+  .sheet{background:var(--panel);width:100%;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;
+    border-top:1px solid var(--line);padding:18px 18px calc(24px + env(safe-area-inset-bottom));animation:up .25s ease}
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .sheet h2{font-size:19px;margin-bottom:14px}
+  .sheet .field{margin-bottom:12px}
+  .sheet-actions{display:flex;gap:10px;margin-top:8px}
+  .sheet-actions button{flex:1;padding:13px;border-radius:10px;font-size:15px;font-weight:600}
+  .btn-ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+  .btn-del{background:#3a1c18;color:#e88;border:1px solid #5a2a24}
+  .seg{display:flex;gap:6px;background:var(--panel-2);padding:4px;border-radius:10px}
+  .seg button{flex:1;background:none;color:var(--muted);padding:9px;border-radius:7px;font-size:13px;font-weight:600}
+  .seg button.on{background:var(--accent);color:#1a0f06}
+  .thumb{width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--line);display:block}
+  .filechip{display:flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px}
+  .filechip .x{margin-left:auto;color:var(--red);font-size:18px;cursor:pointer}
+  .entry{border-left:3px solid var(--accent);padding-left:12px;margin-bottom:14px}
+  .entry .date{font-size:11px;color:var(--muted)}.entry .cost{color:var(--accent);font-weight:700}
+  label.upload{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--panel-2);
+    border:1px dashed var(--line);border-radius:10px;padding:14px;color:var(--muted);font-size:14px;cursor:pointer}
+  .checkbox{width:26px;height:26px;border-radius:7px;border:2px solid var(--line);background:var(--panel-2);
+    display:grid;place-items:center;flex-shrink:0;font-size:16px;color:var(--green)}
+  .checkbox.on{background:var(--green);border-color:var(--green);color:#14110e}
+  .todo-text.done{text-decoration:line-through;color:var(--muted)}
+  .filterbar{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:4px}
+  .filterbar button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    padding:7px 13px;border-radius:20px;font-size:12px;white-space:nowrap}
+  .filterbar button.on{background:var(--accent);color:#1a0f06;border-color:var(--accent)}
+  .imgview{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:80;display:none;align-items:center;justify-content:center;padding:16px}
+  .imgview.open{display:flex}
+  .imgview img{max-width:100%;max-height:90vh;border-radius:8px}
+  .imgview .close{position:absolute;top:16px;right:16px;color:#fff;font-size:30px}
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--panel-2);
+    border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:30px;font-size:14px;
+    z-index:90;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;max-width:90%}
+  .toast.show{opacity:1}
+  .spinner{width:40px;height:40px;border:3px solid var(--line);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loadwrap{display:flex;flex-direction:column;align-items:center;color:var(--muted);padding:40px}
+</style>
+</head>
+<body>
+
+<!-- SETUP (gdy brak kluczy) -->
+<div id="setup">
+  <div style="text-align:center"><div style="font-size:46px">🔧</div><h1 style="font-size:24px;margin-top:8px">Konfiguracja</h1></div>
+  <div class="card">
+    <p class="small muted" style="margin-top:0">Aplikacja potrzebuje połączenia z Twoją darmową bazą Supabase. Wklej dwie wartości z panelu Supabase (Project Settings → API).</p>
+    <div class="field"><label>Project URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+    <div class="field"><label>anon public key</label><input id="cfgKey" placeholder="eyJhbG..."></div>
+    <div class="err" id="cfgErr"></div>
+    <button class="btn-primary" onclick="saveConfig()" style="width:100%">Połącz</button>
+    <p class="hint" style="margin-top:14px">Te dane zapisują się tylko w Twojej przeglądarce. Wpisujesz je raz.</p>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login" style="display:none">
+  <div class="badge">🏚️</div>
+  <h1>Dziennik Remontu</h1>
+  <p id="loginSub">Zaloguj się, aby otworzyć swój dom</p>
+  <div class="card">
+    <div class="field"><label>E-mail</label><input id="email" type="email" autocomplete="email" placeholder="twoj@email.pl"></div>
+    <div class="field"><label>Hasło</label><input id="pass" type="password" autocomplete="current-password" placeholder="hasło"
+      onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn-primary" id="loginBtn" onclick="doLogin()">Zaloguj</button>
+    <button class="linkbtn" onclick="toggleMode()" id="switchMode">Nie mam jeszcze konta — załóż</button>
+  </div>
+  <div class="hint">Dane i zdjęcia są w Twojej prywatnej bazie. Widzisz je z każdego urządzenia po zalogowaniu.</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="top">
+    <div><h1 id="houseName">Mój Dom</h1><div class="sub" id="topSub">Centrum remontu</div></div>
+    <div class="row">
+      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+      <button class="icon-btn" onclick="logout()">⏻</button>
+    </div>
+  </header>
+  <main id="view"><div class="loadwrap"><div class="spinner"></div>Wczytywanie…</div></main>
+  <button class="fab" id="fab" onclick="fabAction()" style="display:none">+</button>
+  <nav class="tabs">
+    <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic">📊</span>Przegląd</button>
+    <button data-tab="stages" onclick="go('stages')"><span class="ic">🧱</span>Etapy</button>
+    <button data-tab="todo" onclick="go('todo')"><span class="ic">✓</span>Zadania</button>
+    <button data-tab="costs" onclick="go('costs')"><span class="ic">💰</span>Wydatki</button>
+  </nav>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="imgview" id="imgview" onclick="this.classList.remove('open')"><span class="close">✕</span><img id="imgviewImg" src="" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ============ KONFIG / POŁĄCZENIE ============ */
+let sb = null, USER = null, signupMode = false;
+let STATE = { stages:[], todos:[], costs:[], house:'Mój Dom' };
+let activeTab='dash', costFilter='all', todoFilter='all', pendingFile=null;
+
+function getCfg(){ try{ return JSON.parse(localStorage.getItem('sb_cfg')); }catch(e){ return null; } }
+function boot(){
+  const cfg = getCfg();
+  if(!cfg || !cfg.url || !cfg.key){ document.getElementById('setup').style.display='flex'; return; }
+  try{
+    sb = supabase.createClient(cfg.url, cfg.key);
+    document.getElementById('setup').style.display='none';
+    document.getElementById('login').style.display='flex';
+    checkSession();
+  }catch(e){
+    document.getElementById('setup').style.display='flex';
+    document.getElementById('cfgErr').textContent='Błąd połączenia — sprawdź dane.';
+  }
+}
+function saveConfig(){
+  const url=document.getElementById('cfgUrl').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('cfgKey').value.trim();
+  const err=document.getElementById('cfgErr');
+  if(!url.startsWith('https://')||!url.includes('supabase')){ err.textContent='Project URL wygląda niepoprawnie.'; return; }
+  if(key.length<30){ err.textContent='anon key wygląda niepoprawnie.'; return; }
+  localStorage.setItem('sb_cfg', JSON.stringify({url,key}));
+  boot();
+}
+
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if(data.session){ USER=data.session.user; await afterLogin(); }
+}
+
+function toggleMode(){
+  signupMode=!signupMode;
+  document.getElementById('loginSub').textContent = signupMode?'Załóż konto — wystarczy e-mail i hasło':'Zaloguj się, aby otworzyć swój dom';
+  document.getElementById('loginBtn').textContent = signupMode?'Załóż konto':'Zaloguj';
+  document.getElementById('switchMode').textContent = signupMode?'Mam już konto — zaloguj':'Nie mam jeszcze konta — załóż';
+  document.getElementById('loginErr').textContent='';
+}
+
+async function doLogin(){
+  const email=document.getElementById('email').value.trim();
+  const pass=document.getElementById('pass').value;
+  const err=document.getElementById('loginErr');
+  const btn=document.getElementById('loginBtn');
+  if(!email||pass.length<6){ err.textContent='Podaj e-mail i hasło (min. 6 znaków).'; return; }
+  btn.disabled=true; btn.textContent='Chwila…';
+  try{
+    if(signupMode){
+      const { data, error } = await sb.auth.signUp({ email, password: pass });
+      if(error) throw error;
+      if(!data.session){ err.style.color='var(--green)'; err.textContent='Konto utworzone. Możesz się teraz zalogować.'; toggleMode(); btn.disabled=false; return; }
+      USER=data.user; await afterLogin();
+    }else{
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if(error) throw error;
+      USER=data.user; await afterLogin();
+    }
+  }catch(e){
+    err.style.color='var(--red)';
+    err.textContent = e.message?.includes('Invalid')?'Błędny e-mail lub hasło.':(e.message||'Coś poszło nie tak.');
+    btn.disabled=false; btn.textContent = signupMode?'Załóż konto':'Zaloguj';
+  }
+}
+
+async function afterLogin(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  await loadAll();
+  go('dash');
+}
+async function logout(){ await sb.auth.signOut(); USER=null; location.reload(); }
+
+/* ============ ŁADOWANIE DANYCH ============ */
+async function loadAll(){
+  try{
+    const [st, td, co, se] = await Promise.all([
+      sb.from('stages').select('*'),
+      sb.from('todos').select('*'),
+      sb.from('costs').select('*'),
+      sb.from('settings').select('*').eq('user_id',USER.id).maybeSingle()
+    ]);
+    STATE.stages = st.data||[];
+    STATE.todos  = td.data||[];
+    STATE.costs  = co.data||[];
+    STATE.house  = se.data?.house_name || 'Mój Dom';
+    document.getElementById('houseName').textContent = STATE.house;
+  }catch(e){ showToast('Błąd wczytywania danych'); }
+}
+
+/* ============ POMOCNICZE ============ */
+function money(n){ return (Number(n)||0).toLocaleString('pl-PL')+' zł'; }
+function fmtDate(iso){ const d=new Date(iso); return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'short',year:'numeric'}); }
+function priLabel(p){ return p==='high'?'Wysoki':p==='mid'?'Średni':'Niski'; }
+function priClass(p){ return p==='high'?'p-high':p==='mid'?'p-mid':'p-low'; }
+function stageById(id){ return STATE.stages.find(s=>s.id===id); }
+function spentOn(id){ return STATE.costs.filter(c=>c.stage_id===id).reduce((a,c)=>a+Number(c.amount||0),0); }
+function progressOf(id){ const t=STATE.todos.filter(x=>x.stage_id===id); if(!t.length)return null; return Math.round(t.filter(x=>x.done).length/t.length*100); }
+function esc(s){ return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function emptyBlock(t,s){ return `<div class="empty"><div class="big">📋</div><div><strong>${t}</strong></div><div class="small" style="margin-top:6px">${s}</div></div>`; }
+
+/* ============ NAWIGACJA ============ */
+function go(tab){
+  activeTab=tab;
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.getElementById('fab').style.display=(tab==='dash')?'none':'grid';
+  render();
+}
+function fabAction(){ if(activeTab==='stages')editStage(); else if(activeTab==='todo')editTodo(); else if(activeTab==='costs')editCost(); }
+
+function render(){
+  const v=document.getElementById('view');
+  if(activeTab==='dash')v.innerHTML=renderDash();
+  else if(activeTab==='stages')v.innerHTML=renderStages();
+  else if(activeTab==='todo')v.innerHTML=renderTodo();
+  else if(activeTab==='costs')v.innerHTML=renderCosts();
+}
+
+function renderDash(){
+  const tb=STATE.stages.reduce((a,s)=>a+Number(s.budget||0),0);
+  const ts=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
+  const pct=tb?Math.round(ts/tb*100):0, remain=tb-ts;
+  const done=STATE.todos.filter(t=>t.done).length;
+  let h=`<div class="kpi-grid">
+    <div class="kpi"><div class="lbl">Budżet całkowity</div><div class="val accent">${money(tb)}</div></div>
+    <div class="kpi"><div class="lbl">Wydano</div><div class="val ${pct>100?'red':''}">${money(ts)}</div></div>
+    <div class="kpi"><div class="lbl">Pozostało</div><div class="val ${remain<0?'red':'green'}">${money(remain)}</div></div>
+    <div class="kpi"><div class="lbl">Zadania</div><div class="val">${done}/${STATE.todos.length}</div></div>
+  </div>
+  <div class="card"><div class="row between"><strong>Wykorzystanie budżetu</strong><span class="muted small">${pct}%</span></div>
+    <div class="barwrap"><div class="bar ${pct>100?'over':pct>85?'':'ok'}" style="width:${Math.min(pct,100)}%"></div></div></div>
+  <h2 style="margin:18px 4px 10px;font-size:17px">Etapy wg priorytetu</h2>`;
+  const ord={high:0,mid:1,low:2};
+  const ss=[...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]);
+  if(!ss.length)h+=emptyBlock('Brak etapów','Dodaj pierwszy etap w zakładce Etapy');
+  ss.forEach(s=>{ const sp=spentOn(s.id),bp=s.budget?Math.round(sp/s.budget*100):0,pr=progressOf(s.id);
+    h+=`<div class="card stagecard" onclick="openStage('${s.id}')">
+      <div class="row between"><div class="row" style="gap:8px"><span class="stage-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong></div>
+      <span class="pill ${priClass(s.priority)}">${priLabel(s.priority)}</span></div>
+      <div class="row between small muted" style="margin-top:10px"><span>${money(sp)} / ${money(s.budget)}</span><span>${pr===null?'brak zadań':pr+'% prac'}</span></div>
+      <div class="barwrap"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div></div>`; });
+  return h;
+}
+function renderStages(){
+  let h=`<h2 style="margin:4px 4px 12px;font-size:18px">Etapy remontu</h2>`;
+  if(!STATE.stages.length)return h+emptyBlock('Jeszcze nic tu nie ma','Naciśnij + aby dodać pierwszy etap (np. Dach)');
+  const ord={high:0,mid:1,low:2};
+  [...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]).forEach(s=>{
+    const sp=spentOn(s.id),bp=s.budget?Math.round(sp/s.budget*100):0,pr=progressOf(s.id),n=STATE.todos.filter(t=>t.stage_id===s.id).length;
+    h+=`<div class="card stagecard" onclick="openStage('${s.id}')">
+      <div class="row between"><div class="row" style="gap:8px"><span class="stage-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong></div>
+      <span class="pill ${priClass(s.priority)}">${priLabel(s.priority)}</span></div>
+      ${s.note?`<div class="small muted" style="margin-top:8px">${esc(s.note)}</div>`:''}
+      <div class="row between small muted" style="margin-top:10px"><span>💰 ${money(sp)} / ${money(s.budget)}</span><span>✓ ${pr===null?'0':pr}% · ${n} zadań</span></div>
+      <div class="barwrap"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div></div>`; });
+  return h;
+}
+function renderTodo(){
+  let h=`<div class="filterbar">
+    <button class="${todoFilter==='all'?'on':''}" onclick="setTodoFilter('all')">Wszystkie</button>
+    <button class="${todoFilter==='open'?'on':''}" onclick="setTodoFilter('open')">Do zrobienia</button>
+    <button class="${todoFilter==='done'?'on':''}" onclick="setTodoFilter('done')">Zrobione</button>`;
+  STATE.stages.forEach(s=>h+=`<button class="${todoFilter===s.id?'on':''}" onclick="setTodoFilter('${s.id}')">${esc(s.name)}</button>`);
+  h+=`</div>`;
+  let list=[...STATE.todos];
+  if(todoFilter==='open')list=list.filter(t=>!t.done);
+  else if(todoFilter==='done')list=list.filter(t=>t.done);
+  else if(todoFilter!=='all')list=list.filter(t=>t.stage_id===todoFilter);
+  const ord={high:0,mid:1,low:2};
+  list.sort((a,b)=>(a.done-b.done)||(ord[a.priority]-ord[b.priority]));
+  if(!list.length)return h+emptyBlock('Brak zadań','Naciśnij + aby dodać zadanie');
+  list.forEach(t=>{ const st=stageById(t.stage_id);
+    h+=`<div class="card"><div class="row" style="gap:12px">
+      <div class="checkbox ${t.done?'on':''}" onclick="toggleTodo('${t.id}')">${t.done?'✓':''}</div>
+      <div style="flex:1" onclick="editTodo('${t.id}')"><div class="todo-text ${t.done?'done':''}">${esc(t.text)}</div>
+      <div class="row small muted" style="gap:8px;margin-top:5px">
+      ${st?`<span class="row" style="gap:5px"><span class="stage-dot" style="background:${st.color}"></span>${esc(st.name)}</span>`:'<span>Bez etapu</span>'}
+      <span class="pill ${priClass(t.priority)}">${priLabel(t.priority)}</span></div></div></div></div>`; });
+  return h;
+}
+function renderCosts(){
+  const tot=STATE.costs.filter(c=>costFilter==='all'||c.stage_id===costFilter).reduce((a,c)=>a+Number(c.amount||0),0);
+  let h=`<div class="filterbar"><button class="${costFilter==='all'?'on':''}" onclick="setCostFilter('all')">Wszystkie</button>`;
+  STATE.stages.forEach(s=>h+=`<button class="${costFilter===s.id?'on':''}" onclick="setCostFilter('${s.id}')">${esc(s.name)}</button>`);
+  h+=`</div><div class="kpi" style="margin-bottom:14px"><div class="lbl">Suma wydatków ${costFilter!=='all'?'(etap)':''}</div><div class="val accent">${money(tot)}</div></div>`;
+  let list=STATE.costs.filter(c=>costFilter==='all'||c.stage_id===costFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!list.length)return h+emptyBlock('Brak wydatków','Naciśnij + aby dodać paragon lub fakturę');
+  list.forEach(c=>{ const st=stageById(c.stage_id);
+    h+=`<div class="card" onclick="editCost('${c.id}')">
+      <div class="row between"><div style="flex:1"><strong>${esc(c.title)}</strong>
+      <div class="entry date" style="margin-top:3px">${fmtDate(c.date)}${st?' · '+esc(st.name):''}</div></div>
+      <span class="cost">${money(c.amount)}</span></div>
+      ${c.note?`<div class="small muted" style="margin-top:8px">${esc(c.note)}</div>`:''}
+      ${c.file_path?`<div id="att-${c.id}" class="small muted" style="margin-top:8px">📎 ładowanie załącznika…</div>`:''}</div>`; });
+  setTimeout(()=>{ list.forEach(c=>{ if(c.file_path)loadAttachment(c); }); },50);
+  return h;
+}
+async function loadAttachment(c){
+  const el=document.getElementById('att-'+c.id); if(!el)return;
+  try{
+    const { data, error } = await sb.storage.from('paragony').createSignedUrl(c.file_path, 3600);
+    if(error)throw error;
+    if(c.file_type==='image'){ el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`; }
+    else{ el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">📄 ${esc(c.file_name||'dokument.pdf')}</div>`; }
+  }catch(e){ el.textContent='📎 nie udało się wczytać załącznika'; }
+}
+
+function setCostFilter(f){ costFilter=f; render(); }
+function setTodoFilter(f){ todoFilter=f; render(); }
+
+/* ============ TOGGLE ZADANIA ============ */
+async function toggleTodo(id){
+  const t=STATE.todos.find(x=>x.id===id); const nv=!t.done; t.done=nv; render();
+  const { error } = await sb.from('todos').update({done:nv}).eq('id',id);
+  if(error){ t.done=!nv; render(); showToast('Błąd zapisu'); }
+}
+
+/* ============ MODALE ============ */
+const modal=document.getElementById('modal'), sheet=document.getElementById('sheet');
+function closeModal(){ modal.classList.remove('open'); }
+modal.addEventListener('click',e=>{ if(e.target===modal)closeModal(); });
+function stageOptions(sel){ let o=`<option value="">— bez etapu —</option>`; STATE.stages.forEach(s=>o+=`<option value="${s.id}" ${sel===s.id?'selected':''}>${esc(s.name)}</option>`); return o; }
+
+/* ---- ETAP ---- */
+function editStage(id){
+  const s=id?stageById(id):{name:'',priority:'mid',budget:'',color:'#d4742a',note:''};
+  const cs=['#c25b4e','#d4742a','#e0b463','#6ba368','#5b8aa6','#9b6bb3','#b3956b'];
+  sheet.innerHTML=`<h2>${id?'Edytuj etap':'Nowy etap'}</h2>
+    <div class="field"><label>Nazwa etapu</label><input id="f_name" value="${esc(s.name)}" placeholder="np. Dach, Elektryka"></div>
+    <div class="field"><label>Priorytet</label><div class="seg" id="f_pri">
+      <button data-v="high" class="${s.priority==='high'?'on':''}" onclick="segPick(this,'f_pri')">Wysoki</button>
+      <button data-v="mid" class="${s.priority==='mid'?'on':''}" onclick="segPick(this,'f_pri')">Średni</button>
+      <button data-v="low" class="${s.priority==='low'?'on':''}" onclick="segPick(this,'f_pri')">Niski</button></div></div>
+    <div class="field"><label>Budżet (zł)</label><input id="f_budget" type="number" inputmode="numeric" value="${s.budget}" placeholder="0"></div>
+    <div class="field"><label>Kolor</label><div class="row" id="f_color" style="gap:8px;flex-wrap:wrap">
+      ${cs.map(c=>`<div onclick="colorPick(this,'${c}')" style="width:34px;height:34px;border-radius:8px;background:${c};border:3px solid ${s.color===c?'#fff':'transparent'}"></div>`).join('')}</div></div>
+    <div class="field"><label>Notatka</label><textarea id="f_note" rows="2" placeholder="opis prac...">${esc(s.note)}</textarea></div>
+    <div class="sheet-actions">${id?`<button class="btn-del" onclick="delStage('${id}')">Usuń</button>`:''}
+      <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveStage('${id||''}')">Zapisz</button></div>`;
+  sheet.dataset.color=s.color; sheet.dataset.pri=s.priority; modal.classList.add('open');
+}
+function segPick(b,g){ document.querySelectorAll(`#${g} button`).forEach(x=>x.classList.remove('on')); b.classList.add('on'); sheet.dataset.pri=b.dataset.v; }
+function colorPick(el,c){ document.querySelectorAll('#f_color div').forEach(d=>d.style.border='3px solid transparent'); el.style.border='3px solid #fff'; sheet.dataset.color=c; }
+async function saveStage(id){
+  const name=document.getElementById('f_name').value.trim(); if(!name)return showToast('Podaj nazwę etapu');
+  const obj={ user_id:USER.id, name, priority:sheet.dataset.pri, budget:+document.getElementById('f_budget').value||0,
+    color:sheet.dataset.color, note:document.getElementById('f_note').value.trim() };
+  document.getElementById('saveBtn').disabled=true;
+  try{
+    if(id){ const {error}=await sb.from('stages').update(obj).eq('id',id); if(error)throw error; Object.assign(stageById(id),obj); }
+    else{ const {data,error}=await sb.from('stages').insert(obj).select().single(); if(error)throw error; STATE.stages.push(data); }
+    closeModal(); render();
+  }catch(e){ showToast('Błąd zapisu etapu'); document.getElementById('saveBtn').disabled=false; }
+}
+async function delStage(id){
+  if(!confirm('Usunąć etap? Zadania i wydatki pozostaną, ale stracą przypisanie.'))return;
+  const {error}=await sb.from('stages').delete().eq('id',id);
+  if(error)return showToast('Błąd usuwania');
+  STATE.stages=STATE.stages.filter(s=>s.id!==id);
+  STATE.todos.forEach(t=>{ if(t.stage_id===id)t.stage_id=null; });
+  STATE.costs.forEach(c=>{ if(c.stage_id===id)c.stage_id=null; });
+  closeModal(); render();
+}
+function openStage(id){
+  const s=stageById(id); const sp=spentOn(id),bp=s.budget?Math.round(sp/s.budget*100):0;
+  const td=STATE.todos.filter(t=>t.stage_id===id), co=STATE.costs.filter(c=>c.stage_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  sheet.innerHTML=`<div class="row between"><h2><span class="stage-dot" style="display:inline-block;background:${s.color};margin-right:8px"></span>${esc(s.name)}</h2>
+    <button class="icon-btn" onclick="editStage('${id}')">✏️</button></div>
+    ${s.note?`<div class="small muted" style="margin:6px 0 14px">${esc(s.note)}</div>`:'<div style="height:8px"></div>'}
+    <div class="kpi-grid"><div class="kpi"><div class="lbl">Budżet</div><div class="val">${money(s.budget)}</div></div>
+    <div class="kpi"><div class="lbl">Wydano</div><div class="val ${bp>100?'red':'accent'}">${money(sp)}</div></div></div>
+    <div class="card"><div class="row between small"><span class="muted">Wykorzystanie</span><span class="muted">${bp}%</span></div>
+    <div class="barwrap"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div></div>
+    <h3 style="margin:16px 2px 8px;font-size:15px">Zadania (${td.filter(t=>t.done).length}/${td.length})</h3>
+    ${td.length?td.map(t=>`<div class="row" style="gap:10px;padding:6px 0">
+      <div class="checkbox ${t.done?'on':''}" onclick="toggleTodo('${t.id}');setTimeout(()=>openStage('${id}'),100)">${t.done?'✓':''}</div>
+      <span class="${t.done?'todo-text done':''}" style="font-size:14px">${esc(t.text)}</span></div>`).join(''):'<div class="small muted">Brak zadań w tym etapie.</div>'}
+    <h3 style="margin:16px 2px 8px;font-size:15px">Wydatki</h3>
+    ${co.length?co.map(c=>`<div class="entry"><div class="row between"><strong style="font-size:14px">${esc(c.title)}</strong><span class="cost">${money(c.amount)}</span></div><div class="date">${fmtDate(c.date)}</div></div>`).join(''):'<div class="small muted">Brak wydatków w tym etapie.</div>'}
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
+  modal.classList.add('open');
+}
+
+/* ---- ZADANIE ---- */
+function editTodo(id){
+  const t=id?STATE.todos.find(x=>x.id===id):{text:'',stage_id:'',priority:'mid'};
+  sheet.innerHTML=`<h2>${id?'Edytuj zadanie':'Nowe zadanie'}</h2>
+    <div class="field"><label>Treść</label><textarea id="f_text" rows="2" placeholder="co trzeba zrobić...">${esc(t.text)}</textarea></div>
+    <div class="field"><label>Etap</label><select id="f_stage">${stageOptions(t.stage_id)}</select></div>
+    <div class="field"><label>Priorytet</label><div class="seg" id="f_pri2">
+      <button data-v="high" class="${t.priority==='high'?'on':''}" onclick="segPick2(this)">Wysoki</button>
+      <button data-v="mid" class="${t.priority==='mid'?'on':''}" onclick="segPick2(this)">Średni</button>
+      <button data-v="low" class="${t.priority==='low'?'on':''}" onclick="segPick2(this)">Niski</button></div></div>
+    <div class="sheet-actions">${id?`<button class="btn-del" onclick="delTodo('${id}')">Usuń</button>`:''}
+      <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveTodo('${id||''}')">Zapisz</button></div>`;
+  sheet.dataset.pri=t.priority; modal.classList.add('open');
+}
+function segPick2(b){ document.querySelectorAll('#f_pri2 button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); sheet.dataset.pri=b.dataset.v; }
+async function saveTodo(id){
+  const text=document.getElementById('f_text').value.trim(); if(!text)return showToast('Wpisz treść zadania');
+  const obj={ user_id:USER.id, text, stage_id:document.getElementById('f_stage').value||null, priority:sheet.dataset.pri };
+  document.getElementById('saveBtn').disabled=true;
+  try{
+    if(id){ const {error}=await sb.from('todos').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.todos.find(x=>x.id===id),obj); }
+    else{ obj.done=false; const {data,error}=await sb.from('todos').insert(obj).select().single(); if(error)throw error; STATE.todos.push(data); }
+    closeModal(); render();
+  }catch(e){ showToast('Błąd zapisu zadania'); document.getElementById('saveBtn').disabled=false; }
+}
+async function delTodo(id){ const {error}=await sb.from('todos').delete().eq('id',id); if(error)return showToast('Błąd usuwania'); STATE.todos=STATE.todos.filter(t=>t.id!==id); closeModal(); render(); }
+
+/* ---- WYDATEK ---- */
+function editCost(id){
+  const c=id?STATE.costs.find(x=>x.id===id):{title:'',amount:'',stage_id:'',date:new Date().toISOString().slice(0,10),note:''};
+  pendingFile=null;
+  sheet.innerHTML=`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
+    <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
+    <div class="field"><label>Kwota (zł)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
+    <div class="field"><label>Etap</label><select id="c_stage">${stageOptions(c.stage_id)}</select></div>
+    <div class="field"><label>Data</label><input id="c_date" type="date" value="${c.date}"></div>
+    <div class="field"><label>Notatka</label><textarea id="c_note" rows="2" placeholder="dostawca, gwarancja, uwagi...">${esc(c.note||'')}</textarea></div>
+    <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
+      <label class="upload">📎 Wybierz lub zrób zdjęcie
+        <input type="file" accept="image/*,application/pdf" capture="environment" style="display:none" onchange="handleFile(this)"></label>
+      <div id="filePreview">${c.file_path?`<div class="filechip">📎 obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
+    <div class="sheet-actions">${id?`<button class="btn-del" onclick="delCost('${id}')">Usuń</button>`:''}
+      <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
+      <button class="btn-primary" id="saveBtn" onclick="saveCost('${id||''}')">Zapisz</button></div>`;
+  sheet.dataset.keepFile='1'; modal.classList.add('open');
+}
+function removeExisting(id){ sheet.dataset.keepFile='0'; document.getElementById('filePreview').innerHTML='<div class="small muted">Załącznik zostanie usunięty po zapisie.</div>'; }
+function handleFile(input){
+  const file=input.files[0]; if(!file)return;
+  sheet.dataset.keepFile='0';
+  if(file.type.startsWith('image')){
+    compressImage(file,(blob,url)=>{ pendingFile={blob,type:'image',name:file.name.replace(/\.\w+$/,'.jpg')};
+      document.getElementById('filePreview').innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">🖼️ ${esc(file.name)}<span class="x" onclick="clearFile()">✕</span></div>`; });
+  }else if(file.type==='application/pdf'){
+    if(file.size>4*1024*1024)return showToast('PDF zbyt duży (max 4MB)');
+    pendingFile={blob:file,type:'pdf',name:file.name};
+    document.getElementById('filePreview').innerHTML=`<div class="filechip">📄 ${esc(file.name)}<span class="x" onclick="clearFile()">✕</span></div>`;
+  }else showToast('Dozwolone: zdjęcie lub PDF');
+}
+function clearFile(){ pendingFile=null; sheet.dataset.keepFile='0'; document.getElementById('filePreview').innerHTML=''; }
+function compressImage(file,cb){
+  const img=new Image(),r=new FileReader();
+  r.onload=e=>{ img.onload=()=>{ const max=1280; let{width,height}=img;
+    if(width>max||height>max){ if(width>height){height=height*max/width;width=max;}else{width=width*max/height;height=max;} }
+    const cv=document.createElement('canvas'); cv.width=width; cv.height=height;
+    cv.getContext('2d').drawImage(img,0,0,width,height);
+    cv.toBlob(b=>cb(b,URL.createObjectURL(b)),'image/jpeg',0.7); }; img.src=e.target.result; };
+  r.readAsDataURL(file);
+}
+async function saveCost(id){
+  const title=document.getElementById('c_title').value.trim(); if(!title)return showToast('Podaj opis wydatku');
+  const btn=document.getElementById('saveBtn'); btn.disabled=true; btn.textContent='Zapisywanie…';
+  const obj={ user_id:USER.id, title, amount:+document.getElementById('c_amount').value||0,
+    stage_id:document.getElementById('c_stage').value||null, date:document.getElementById('c_date').value,
+    note:document.getElementById('c_note').value.trim() };
+  try{
+    const existing=id?STATE.costs.find(x=>x.id===id):null;
+    if(pendingFile){
+      const ext=pendingFile.type==='pdf'?'pdf':'jpg';
+      const path=`${USER.id}/${Date.now()}.${ext}`;
+      const {error:upErr}=await sb.storage.from('paragony').upload(path,pendingFile.blob,{contentType:pendingFile.type==='pdf'?'application/pdf':'image/jpeg'});
+      if(upErr)throw upErr;
+      if(existing?.file_path){ await sb.storage.from('paragony').remove([existing.file_path]); }
+      obj.file_path=path; obj.file_type=pendingFile.type; obj.file_name=pendingFile.name;
+    } else if(sheet.dataset.keepFile==='1' && existing?.file_path){
+      obj.file_path=existing.file_path; obj.file_type=existing.file_type; obj.file_name=existing.file_name;
+    } else {
+      if(existing?.file_path) await sb.storage.from('paragony').remove([existing.file_path]);
+      obj.file_path=null; obj.file_type=null; obj.file_name=null;
+    }
+    if(id){ const {error}=await sb.from('costs').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.costs.find(x=>x.id===id),obj); }
+    else{ const {data,error}=await sb.from('costs').insert(obj).select().single(); if(error)throw error; STATE.costs.push(data); }
+    closeModal(); render();
+  }catch(e){ showToast('Błąd zapisu wydatku'); btn.disabled=false; btn.textContent='Zapisz'; }
+}
+async function delCost(id){
+  if(!confirm('Usunąć ten wydatek?'))return;
+  const c=STATE.costs.find(x=>x.id===id);
+  if(c?.file_path) await sb.storage.from('paragony').remove([c.file_path]);
+  const {error}=await sb.from('costs').delete().eq('id',id);
+  if(error)return showToast('Błąd usuwania');
+  STATE.costs=STATE.costs.filter(x=>x.id!==id); closeModal(); render();
+}
+
+/* ---- USTAWIENIA ---- */
+function openSettings(){
+  sheet.innerHTML=`<h2>Ustawienia</h2>
+    <div class="field"><label>Nazwa domu / projektu</label><input id="s_house" value="${esc(STATE.house)}"></div>
+    <div class="card small muted"><strong style="color:var(--ink)">Twoje dane</strong><br>
+      Etapy: ${STATE.stages.length} · Zadania: ${STATE.todos.length} · Wydatki: ${STATE.costs.length}<br>
+      Zalogowany jako: ${esc(USER.email)}<br>Wszystko w Twojej prywatnej bazie w chmurze.</div>
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button>
+      <button class="btn-primary" onclick="saveSettings()">Zapisz</button></div>`;
+  modal.classList.add('open');
+}
+async function saveSettings(){
+  const name=document.getElementById('s_house').value.trim()||'Mój Dom';
+  STATE.house=name; document.getElementById('houseName').textContent=name;
+  await sb.from('settings').upsert({user_id:USER.id,house_name:name});
+  closeModal();
+}
+
+/* ---- VIEWERS / TOAST ---- */
+function viewImg(src){ document.getElementById('imgviewImg').src=src; document.getElementById('imgview').classList.add('open'); }
+let toastTimer;
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400); }
+
+boot();
+</script>
+</body>
+</html>
