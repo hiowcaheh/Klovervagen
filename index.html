@@ -263,10 +263,10 @@ async function logout(){ await sb.auth.signOut(); USER=null; location.reload(); 
 async function loadAll(){
   try{
     const [st, td, co, se] = await Promise.all([
-      sb.from('stages').select('*'),
-      sb.from('todos').select('*'),
-      sb.from('costs').select('*'),
-      sb.from('settings').select('*').eq('user_id',USER.id).maybeSingle()
+      sb.from('kv12_stages').select('*'),
+      sb.from('kv12_todos').select('*'),
+      sb.from('kv12_costs').select('*'),
+      sb.from('kv12_settings').select('*').eq('user_id',USER.id).maybeSingle()
     ]);
     STATE.stages = st.data||[];
     STATE.todos  = td.data||[];
@@ -386,7 +386,7 @@ function renderCosts(){
 async function loadAttachment(c){
   const el=document.getElementById('att-'+c.id); if(!el)return;
   try{
-    const { data, error } = await sb.storage.from('paragony').createSignedUrl(c.file_path, 3600);
+    const { data, error } = await sb.storage.from('kv12_paragony').createSignedUrl(c.file_path, 3600);
     if(error)throw error;
     if(c.file_type==='image'){ el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`; }
     else{ el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">📄 ${esc(c.file_name||'dokument.pdf')}</div>`; }
@@ -399,7 +399,7 @@ function setTodoFilter(f){ todoFilter=f; render(); }
 /* ============ TOGGLE ZADANIA ============ */
 async function toggleTodo(id){
   const t=STATE.todos.find(x=>x.id===id); const nv=!t.done; t.done=nv; render();
-  const { error } = await sb.from('todos').update({done:nv}).eq('id',id);
+  const { error } = await sb.from('kv12_todos').update({done:nv}).eq('id',id);
   if(error){ t.done=!nv; render(); showToast('Błąd zapisu'); }
 }
 
@@ -436,14 +436,14 @@ async function saveStage(id){
     color:sheet.dataset.color, note:document.getElementById('f_note').value.trim() };
   document.getElementById('saveBtn').disabled=true;
   try{
-    if(id){ const {error}=await sb.from('stages').update(obj).eq('id',id); if(error)throw error; Object.assign(stageById(id),obj); }
-    else{ const {data,error}=await sb.from('stages').insert(obj).select().single(); if(error)throw error; STATE.stages.push(data); }
+    if(id){ const {error}=await sb.from('kv12_stages').update(obj).eq('id',id); if(error)throw error; Object.assign(stageById(id),obj); }
+    else{ const {data,error}=await sb.from('kv12_stages').insert(obj).select().single(); if(error)throw error; STATE.stages.push(data); }
     closeModal(); render();
   }catch(e){ showToast('Błąd zapisu etapu'); document.getElementById('saveBtn').disabled=false; }
 }
 async function delStage(id){
   if(!confirm('Usunąć etap? Zadania i wydatki pozostaną, ale stracą przypisanie.'))return;
-  const {error}=await sb.from('stages').delete().eq('id',id);
+  const {error}=await sb.from('kv12_stages').delete().eq('id',id);
   if(error)return showToast('Błąd usuwania');
   STATE.stages=STATE.stages.filter(s=>s.id!==id);
   STATE.todos.forEach(t=>{ if(t.stage_id===id)t.stage_id=null; });
@@ -491,12 +491,12 @@ async function saveTodo(id){
   const obj={ user_id:USER.id, text, stage_id:document.getElementById('f_stage').value||null, priority:sheet.dataset.pri };
   document.getElementById('saveBtn').disabled=true;
   try{
-    if(id){ const {error}=await sb.from('todos').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.todos.find(x=>x.id===id),obj); }
-    else{ obj.done=false; const {data,error}=await sb.from('todos').insert(obj).select().single(); if(error)throw error; STATE.todos.push(data); }
+    if(id){ const {error}=await sb.from('kv12_todos').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.todos.find(x=>x.id===id),obj); }
+    else{ obj.done=false; const {data,error}=await sb.from('kv12_todos').insert(obj).select().single(); if(error)throw error; STATE.todos.push(data); }
     closeModal(); render();
   }catch(e){ showToast('Błąd zapisu zadania'); document.getElementById('saveBtn').disabled=false; }
 }
-async function delTodo(id){ const {error}=await sb.from('todos').delete().eq('id',id); if(error)return showToast('Błąd usuwania'); STATE.todos=STATE.todos.filter(t=>t.id!==id); closeModal(); render(); }
+async function delTodo(id){ const {error}=await sb.from('kv12_todos').delete().eq('id',id); if(error)return showToast('Błąd usuwania'); STATE.todos=STATE.todos.filter(t=>t.id!==id); closeModal(); render(); }
 
 /* ---- WYDATEK ---- */
 function editCost(id){
@@ -551,26 +551,26 @@ async function saveCost(id){
     if(pendingFile){
       const ext=pendingFile.type==='pdf'?'pdf':'jpg';
       const path=`${USER.id}/${Date.now()}.${ext}`;
-      const {error:upErr}=await sb.storage.from('paragony').upload(path,pendingFile.blob,{contentType:pendingFile.type==='pdf'?'application/pdf':'image/jpeg'});
+      const {error:upErr}=await sb.storage.from('kv12_paragony').upload(path,pendingFile.blob,{contentType:pendingFile.type==='pdf'?'application/pdf':'image/jpeg'});
       if(upErr)throw upErr;
-      if(existing?.file_path){ await sb.storage.from('paragony').remove([existing.file_path]); }
+      if(existing?.file_path){ await sb.storage.from('kv12_paragony').remove([existing.file_path]); }
       obj.file_path=path; obj.file_type=pendingFile.type; obj.file_name=pendingFile.name;
     } else if(sheet.dataset.keepFile==='1' && existing?.file_path){
       obj.file_path=existing.file_path; obj.file_type=existing.file_type; obj.file_name=existing.file_name;
     } else {
-      if(existing?.file_path) await sb.storage.from('paragony').remove([existing.file_path]);
+      if(existing?.file_path) await sb.storage.from('kv12_paragony').remove([existing.file_path]);
       obj.file_path=null; obj.file_type=null; obj.file_name=null;
     }
-    if(id){ const {error}=await sb.from('costs').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.costs.find(x=>x.id===id),obj); }
-    else{ const {data,error}=await sb.from('costs').insert(obj).select().single(); if(error)throw error; STATE.costs.push(data); }
+    if(id){ const {error}=await sb.from('kv12_costs').update(obj).eq('id',id); if(error)throw error; Object.assign(STATE.costs.find(x=>x.id===id),obj); }
+    else{ const {data,error}=await sb.from('kv12_costs').insert(obj).select().single(); if(error)throw error; STATE.costs.push(data); }
     closeModal(); render();
   }catch(e){ showToast('Błąd zapisu wydatku'); btn.disabled=false; btn.textContent='Zapisz'; }
 }
 async function delCost(id){
   if(!confirm('Usunąć ten wydatek?'))return;
   const c=STATE.costs.find(x=>x.id===id);
-  if(c?.file_path) await sb.storage.from('paragony').remove([c.file_path]);
-  const {error}=await sb.from('costs').delete().eq('id',id);
+  if(c?.file_path) await sb.storage.from('kv12_paragony').remove([c.file_path]);
+  const {error}=await sb.from('kv12_costs').delete().eq('id',id);
   if(error)return showToast('Błąd usuwania');
   STATE.costs=STATE.costs.filter(x=>x.id!==id); closeModal(); render();
 }
@@ -589,7 +589,7 @@ function openSettings(){
 async function saveSettings(){
   const name=document.getElementById('s_house').value.trim()||'Mój Dom';
   STATE.house=name; document.getElementById('houseName').textContent=name;
-  await sb.from('settings').upsert({user_id:USER.id,house_name:name});
+  await sb.from('kv12_settings').upsert({user_id:USER.id,house_name:name});
   closeModal();
 }
 
