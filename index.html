@@ -46,7 +46,7 @@
   #setup ol{padding-left:20px;line-height:1.8;font-size:14px;color:var(--muted)}
   #setup ol b{color:var(--ink)}
 
-  #app{display:none;padding-bottom:82px}
+  #app{display:none;padding-bottom:82px;overflow-x:hidden}
   header.top{position:sticky;top:0;z-index:20;background:rgba(15,13,10,.94);backdrop-filter:blur(12px);
     -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:12px 16px;
     display:flex;align-items:center;justify-content:space-between}
@@ -160,6 +160,10 @@
   .fab .lucide{width:26px;height:26px;stroke-width:2.5}
   .empty .lucide{width:52px;height:52px;opacity:.2;display:block;margin:0 auto 14px}
   .setup-icon .lucide{width:54px;height:54px;color:var(--accent)}
+  @keyframes slideInRight{from{opacity:.3;transform:translateX(80px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes slideInLeft{from{opacity:.3;transform:translateX(-80px)}to{opacity:1;transform:translateX(0)}}
+  .slide-in-right{animation:slideInRight .3s cubic-bezier(.25,.46,.45,.94) both}
+  .slide-in-left{animation:slideInLeft .3s cubic-bezier(.25,.46,.45,.94) both}
 </style>
 </head>
 <body>
@@ -326,20 +330,28 @@ function emptyBlock(t,s){return`<div class="empty"><i data-lucide="inbox"></i><d
 function ic(name,size){return`<i data-lucide="${name}" style="width:${size||14}px;height:${size||14}px;flex-shrink:0;vertical-align:middle"></i>`;}
 
 /* ============ NAWIGACJA ============ */
+const TAB_ORDER=['dash','stages','todo','costs'];
 function go(tab){
+  const pi=TAB_ORDER.indexOf(activeTab),ni=TAB_ORDER.indexOf(tab);
+  const dir=ni>pi?'right':ni<pi?'left':null;
   activeTab=tab;
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.getElementById('fab').style.display=(tab==='dash')?'none':'grid';
-  render();
+  render(dir);
 }
 function fabAction(){if(activeTab==='stages')editStage();else if(activeTab==='todo')editTodo();else if(activeTab==='costs')editCost();}
-function render(){
+function render(dir){
   const v=document.getElementById('view');
   if(activeTab==='dash')v.innerHTML=renderDash();
   else if(activeTab==='stages')v.innerHTML=renderStages();
   else if(activeTab==='todo')v.innerHTML=renderTodo();
   else if(activeTab==='costs')v.innerHTML=renderCosts();
   lucide.createIcons();
+  if(dir){
+    v.classList.remove('slide-in-right','slide-in-left');
+    void v.offsetWidth;
+    v.classList.add(dir==='right'?'slide-in-right':'slide-in-left');
+  }
 }
 
 /* ============ WIDOKI ============ */
@@ -845,16 +857,29 @@ function initImgView(){
 /* ---- SWIPE NAWIGACJA ---- */
 function initSwipe(){
   const tabs=['dash','stages','todo','costs'];
-  let sx=0,sy=0;
-  document.getElementById('app').addEventListener('touchstart',e=>{
-    if(document.getElementById('modal').classList.contains('open'))return;
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  let sx=0,sy=0,dir=null;
+  const app=document.getElementById('app');
+  const modal=document.getElementById('modal');
+  app.addEventListener('touchstart',e=>{
+    if(modal.classList.contains('open'))return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;dir=null;
   },{passive:true});
-  document.getElementById('app').addEventListener('touchend',e=>{
-    if(document.getElementById('modal').classList.contains('open'))return;
+  app.addEventListener('touchmove',e=>{
+    if(modal.classList.contains('open'))return;
+    if(!dir){
+      const dx=Math.abs(e.touches[0].clientX-sx);
+      const dy=Math.abs(e.touches[0].clientY-sy);
+      if(dx>8||dy>8)dir=dx>dy?'h':'v';
+    }
+    if(dir==='h')e.preventDefault();
+  },{passive:false});
+  app.addEventListener('touchend',e=>{
+    if(modal.classList.contains('open'))return;
     const dx=e.changedTouches[0].clientX-sx;
     const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.2)return;
+    // ignoruj gest "wstecz" iOS (start od lewej krawędzi)
+    if(dx>0&&sx<30)return;
+    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5)return;
     const i=tabs.indexOf(activeTab);
     if(dx<0&&i<tabs.length-1)go(tabs[i+1]);
     else if(dx>0&&i>0)go(tabs[i-1]);
