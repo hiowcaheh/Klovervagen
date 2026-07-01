@@ -129,10 +129,14 @@
   .imgview{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:80;display:none;align-items:center;
     justify-content:center;padding:16px}
   .imgview.open{display:flex}
-  .imgview img{max-width:100%;max-height:90vh;border-radius:8px;cursor:zoom-in;transition:transform .3s cubic-bezier(.4,0,.2,1);transform-origin:center}
-  .imgview .close{position:absolute;top:16px;right:16px;color:#fff;font-size:28px;cursor:pointer;
-    background:rgba(255,255,255,.1);width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
-  .toast{position:fixed;bottom:104px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--panel-2);
+  .imgview img{max-width:100%;max-height:90vh;border-radius:8px;cursor:zoom-in;
+    transition:transform .3s cubic-bezier(.4,0,.2,1);transform-origin:center;
+    position:relative;z-index:1}
+  .imgview .close{position:absolute;top:16px;right:16px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;
+    background:rgba(0,0,0,.8);border:1.5px solid rgba(255,255,255,.35);
+    width:44px;height:44px;border-radius:50%;display:grid;place-items:center;z-index:3;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);background:var(--panel-2);
     border:1px solid var(--line);border-left:3px solid var(--muted);color:var(--ink);padding:11px 20px;
     border-radius:30px;font-size:14px;font-weight:500;z-index:90;opacity:0;
     transition:opacity .2s,transform .2s;pointer-events:none;text-align:center;max-width:92%;white-space:nowrap}
@@ -366,7 +370,18 @@ function renderStages(){
   return h;
 }
 function renderTodo(){
-  let h=`<div class="filterbar">
+  const total=STATE.todos.length,done=STATE.todos.filter(t=>t.done).length,open=total-done,pct=total?Math.round(done/total*100):0;
+  let h=`<div class="kpi-grid">
+    <div class="kpi"><div class="lbl">Wszystkich</div><div class="val">${total}</div></div>
+    <div class="kpi"><div class="lbl">Ukończone</div><div class="val green">${done}</div></div>
+    <div class="kpi"><div class="lbl">Do zrobienia</div><div class="val ${open>0?'accent':''}">${open}</div></div>
+    <div class="kpi"><div class="lbl">Postęp</div><div class="val ${pct===100?'green':''}">${pct}%</div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="row between small" style="margin-bottom:4px"><span class="muted">Ukończono zadań</span><span class="muted">${done} / ${total}</span></div>
+    <div class="barwrap"><div class="bar ${pct===100?'ok':''}" style="width:${pct}%"></div></div>
+  </div>`;
+  h+=`<div class="filterbar">
     <button class="${todoFilter==='all'?'on':''}" onclick="setTodoFilter('all')">Wszystkie</button>
     <button class="${todoFilter==='open'?'on':''}" onclick="setTodoFilter('open')">Do zrobienia</button>
     <button class="${todoFilter==='done'?'on':''}" onclick="setTodoFilter('done')">Zrobione</button>`;
@@ -480,14 +495,10 @@ async function addGalleryPhotos(input){
   const lbl=input.closest('label');if(lbl)lbl.style.opacity='0.5';
   let ok=0;
   for(const file of files){
-    await new Promise(res=>{
-      compressImage(file,async(blob)=>{
-        const path=USER.id+'/galeria/'+Date.now()+'_'+Math.random().toString(36).slice(2,5)+'.jpg';
-        const{error}=await sb.storage.from('paragony').upload(path,blob,{contentType:'image/jpeg'});
-        if(!error)ok++;
-        res();
-      });
-    });
+    const ext=(file.name.match(/\.(\w+)$/)?.[1]||'jpg').toLowerCase();
+    const path=USER.id+'/galeria/'+Date.now()+'_'+Math.random().toString(36).slice(2,5)+'.'+ext;
+    const{error}=await sb.storage.from('paragony').upload(path,file,{contentType:file.type||'image/jpeg'});
+    if(!error)ok++;
   }
   if(lbl)lbl.style.opacity='1';
   if(ok){
