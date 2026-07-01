@@ -129,9 +129,9 @@
   .imgview{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:80;display:none;align-items:center;
     justify-content:center;padding:16px}
   .imgview.open{display:flex}
-  .imgview img{max-width:100%;max-height:90vh;border-radius:8px;cursor:zoom-in;
-    transition:transform .3s cubic-bezier(.4,0,.2,1);transform-origin:center;
-    position:relative;z-index:1}
+  .imgview img{max-width:100%;max-height:90vh;border-radius:8px;cursor:grab;
+    transform-origin:center;position:relative;z-index:1;
+    touch-action:none;user-select:none;-webkit-user-select:none}
   .imgview .close{position:absolute;top:16px;right:16px;color:#fff;font-size:20px;font-weight:700;cursor:pointer;
     background:rgba(0,0,0,.8);border:1.5px solid rgba(255,255,255,.35);
     width:44px;height:44px;border-radius:50%;display:grid;place-items:center;z-index:3;
@@ -209,7 +209,7 @@
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 <div class="imgview" id="imgview" onclick="if(event.target===this)closeImgView()">
   <span class="close" onclick="closeImgView()">✕</span>
-  <img id="imgviewImg" src="" alt="" onclick="event.stopPropagation();toggleImgZoom(this)">
+  <img id="imgviewImg" src="" alt="">
 </div>
 <div class="toast" id="toast"></div>
 
@@ -709,22 +709,89 @@ async function saveSettings(){
   closeModal();showToast('✓ Zapisano','ok');
 }
 
-/* ---- IMGVIEW + ZOOM ---- */
+/* ---- IMGVIEW + PINCH/PAN ---- */
+let imgS=1,imgX=0,imgY=0;
 function viewImg(src){
   const img=document.getElementById('imgviewImg');
-  img.src=src;img.dataset.z='0';img.style.transform='scale(1)';img.style.cursor='zoom-in';
+  imgS=1;imgX=0;imgY=0;
+  img.src=src;img.style.transition='none';img.style.transform='translate(0,0) scale(1)';
   document.getElementById('imgview').classList.add('open');
 }
 function closeImgView(){
+  imgS=1;imgX=0;imgY=0;
   const img=document.getElementById('imgviewImg');
-  img.dataset.z='0';img.style.transform='scale(1)';
+  img.style.transition='none';img.style.transform='translate(0,0) scale(1)';
   document.getElementById('imgview').classList.remove('open');
 }
-function toggleImgZoom(img){
-  const z=img.dataset.z!=='1';
-  img.dataset.z=z?'1':'0';
-  img.style.transform=z?'scale(2.2)':'scale(1)';
-  img.style.cursor=z?'zoom-out':'zoom-in';
+function clampImg(img){
+  if(imgS<=1){imgX=0;imgY=0;return;}
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const maxX=Math.max(0,(img.offsetWidth*imgS-vw)/2);
+  const maxY=Math.max(0,(img.offsetHeight*imgS-vh)/2);
+  imgX=Math.max(-maxX,Math.min(maxX,imgX));
+  imgY=Math.max(-maxY,Math.min(maxY,imgY));
+}
+function initImgView(){
+  const img=document.getElementById('imgviewImg');
+  let st=[],startS=1,startX=0,startY=0,lastTap=0;
+  document.getElementById('imgview').addEventListener('touchend',e=>{
+    if(e.target===document.getElementById('imgview'))closeImgView();
+  });
+  img.addEventListener('touchstart',e=>{
+    e.preventDefault();e.stopPropagation();
+    const now=Date.now();
+    if(e.touches.length===1&&now-lastTap<300){
+      lastTap=0;
+      if(imgS>1.5){imgS=1;imgX=0;imgY=0;}
+      else{
+        const vw=window.innerWidth,vh=window.innerHeight,newS=3;
+        imgX=(e.touches[0].clientX-vw/2)*(1-newS);
+        imgY=(e.touches[0].clientY-vh/2)*(1-newS);
+        imgS=newS;clampImg(img);
+      }
+      img.style.transition='transform .3s ease';
+      img.style.transform=`translate(${imgX}px,${imgY}px) scale(${imgS})`;
+      return;
+    }
+    lastTap=now;
+    st=Array.from(e.touches).map(t=>({x:t.clientX,y:t.clientY}));
+    startS=imgS;startX=imgX;startY=imgY;
+    img.style.transition='none';
+  },{passive:false});
+  img.addEventListener('touchmove',e=>{
+    e.preventDefault();e.stopPropagation();
+    const ts=Array.from(e.touches);
+    if(ts.length===2){
+      if(st.length<2){
+        st=ts.map(t=>({x:t.clientX,y:t.clientY}));
+        startS=imgS;startX=imgX;startY=imgY;return;
+      }
+      const vw=window.innerWidth,vh=window.innerHeight;
+      const d0=Math.hypot(st[1].x-st[0].x,st[1].y-st[0].y);
+      const d1=Math.hypot(ts[1].clientX-ts[0].clientX,ts[1].clientY-ts[0].clientY);
+      const newS=Math.max(1,Math.min(8,startS*d1/d0));
+      const mx0=(st[0].x+st[1].x)/2,my0=(st[0].y+st[1].y)/2;
+      const mx1=(ts[0].clientX+ts[1].clientX)/2,my1=(ts[0].clientY+ts[1].clientY)/2;
+      imgX=mx1-vw/2-(mx0-vw/2-startX)*(newS/startS);
+      imgY=my1-vh/2-(my0-vh/2-startY)*(newS/startS);
+      imgS=newS;
+    }else if(ts.length===1&&st.length>=1){
+      imgX=startX+(ts[0].clientX-st[0].x);
+      imgY=startY+(ts[0].clientY-st[0].y);
+    }
+    clampImg(img);
+    img.style.transform=`translate(${imgX}px,${imgY}px) scale(${imgS})`;
+  },{passive:false});
+  img.addEventListener('touchend',e=>{
+    e.preventDefault();e.stopPropagation();
+    if(imgS<1.05){
+      imgS=1;imgX=0;imgY=0;
+      img.style.transition='transform .25s ease';
+      img.style.transform='translate(0,0) scale(1)';
+    }
+    st=Array.from(e.touches).map(t=>({x:t.clientX,y:t.clientY}));
+    startS=imgS;startX=imgX;startY=imgY;
+  },{passive:false});
 }
 
 /* ---- TOAST ---- */
@@ -738,6 +805,7 @@ function showToast(m,type=''){
 }
 
 boot();
+initImgView();
 </script>
 </body>
 </html>
