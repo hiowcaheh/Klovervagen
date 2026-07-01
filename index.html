@@ -229,7 +229,7 @@
 /* ============ KONFIG / POŁĄCZENIE ============ */
 let sb=null,USER=null,signupMode=false;
 let STATE={stages:[],todos:[],costs:[],house:'Klövervägen 12'};
-let activeTab='dash',costFilter='all',todoFilter='all',pendingFile=null;
+let activeTab='dash',costFilter='all',costCatFilter='all',todoFilter='all',pendingFile=null;
 let galleryData=[];
 
 function getCfg(){ try{return JSON.parse(localStorage.getItem('sb_cfg'));}catch(e){return null;} }
@@ -417,18 +417,22 @@ function renderTodo(){
   return h;
 }
 function renderCosts(){
-  const tot=STATE.costs.filter(c=>costFilter==='all'||c.stage_id===costFilter).reduce((a,c)=>a+Number(c.amount||0),0);
+  const CATS=['materials','labor','tools','other'];
+  const filtered=STATE.costs.filter(c=>(costFilter==='all'||c.stage_id===costFilter)&&(costCatFilter==='all'||(c.category||'other')===costCatFilter));
+  const tot=filtered.reduce((a,c)=>a+Number(c.amount||0),0);
   let h=`<div class="filterbar"><button class="${costFilter==='all'?'on':''}" onclick="setCostFilter('all')">Wszystkie</button>`;
   STATE.stages.forEach(s=>h+=`<button class="${costFilter===s.id?'on':''}" onclick="setCostFilter('${s.id}')">${esc(s.name)}</button>`);
-  h+=`</div><div class="kpi" style="margin-bottom:14px"><div class="lbl">Suma wydatków ${costFilter!=='all'?'(etap)':''}</div><div class="val accent">${money(tot)}</div></div>`;
-  let list=STATE.costs.filter(c=>costFilter==='all'||c.stage_id===costFilter).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  h+=`</div><div class="filterbar"><button class="${costCatFilter==='all'?'on':''}" onclick="setCostCatFilter('all')">Wszystkie kat.</button>`;
+  CATS.forEach(cat=>h+=`<button class="${costCatFilter===cat?'on':''}" onclick="setCostCatFilter('${cat}')">${catLabel(cat)}</button>`);
+  h+=`</div><div class="kpi" style="margin-bottom:14px"><div class="lbl">Suma wydatków</div><div class="val accent">${money(tot)}</div></div>`;
+  const list=[...filtered].sort((a,b)=>new Date(b.date)-new Date(a.date));
   if(!list.length)return h+emptyBlock('Brak wydatków','Naciśnij + aby dodać paragon lub fakturę');
   list.forEach(c=>{const st=stageById(c.stage_id);
     h+=`<div class="card" onclick="editCost('${c.id}')">
       <div class="row between"><div style="flex:1"><strong>${esc(c.title)}</strong>
       <div class="entry date" style="margin-top:3px">${fmtDate(c.date)}${st?' · '+esc(st.name):''}</div></div>
       <span class="cost">${money(c.amount)}</span></div>
-      ${c.note?`<div class="small muted" style="margin-top:8px">${esc(c.note)}</div>`:''}
+      ${c.category||c.note?`<div class="row small" style="gap:6px;margin-top:7px;flex-wrap:wrap">${c.category?`<span class="pill">${catLabel(c.category)}</span>`:''}${c.note?`<span class="muted">${esc(c.note)}</span>`:''}</div>`:''}
       ${c.file_path?`<div id="att-${c.id}" class="small muted" style="margin-top:8px">ładowanie załącznika…</div>`:''}</div>`;});
   setTimeout(()=>{list.forEach(c=>{if(c.file_path)loadAttachment(c);});},50);
   return h;
@@ -448,6 +452,8 @@ async function loadAttachment(c){
 }
 
 function setCostFilter(f){costFilter=f;render();}
+function setCostCatFilter(f){costCatFilter=f;render();}
+function catLabel(c){return c==='materials'?'Materiały':c==='labor'?'Robocizna':c==='tools'?'Narzędzia':'Inne';}
 function setTodoFilter(f){todoFilter=f;render();}
 
 /* ============ TOGGLE ZADANIA ============ */
@@ -643,6 +649,12 @@ function editCost(id){
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
     <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
     <div class="field"><label>Etap</label><select id="c_stage">${stageOptions(c.stage_id)}</select></div>
+    <div class="field"><label>Kategoria</label><select id="c_cat">
+      <option value="materials" ${(c.category||'materials')==='materials'?'selected':''}>Materiały</option>
+      <option value="labor" ${c.category==='labor'?'selected':''}>Robocizna</option>
+      <option value="tools" ${c.category==='tools'?'selected':''}>Narzędzia</option>
+      <option value="other" ${c.category==='other'?'selected':''}>Inne</option>
+    </select></div>
     <div class="field"><label>Data</label><input id="c_date" type="date" value="${c.date}"></div>
     <div class="field"><label>Notatka</label><textarea id="c_note" rows="2" placeholder="dostawca, gwarancja, uwagi...">${esc(c.note||'')}</textarea></div>
     <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
@@ -688,7 +700,9 @@ async function saveCost(id){
   const title=document.getElementById('c_title').value.trim();if(!title)return showToast('Podaj opis wydatku');
   const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Zapisywanie…';
   const obj={user_id:USER.id,title,amount:+document.getElementById('c_amount').value||0,
-    stage_id:document.getElementById('c_stage').value||null,date:document.getElementById('c_date').value,
+    stage_id:document.getElementById('c_stage').value||null,
+    category:document.getElementById('c_cat').value||'other',
+    date:document.getElementById('c_date').value,
     note:document.getElementById('c_note').value.trim()};
   try{
     const existing=id?STATE.costs.find(x=>x.id===id):null;
@@ -726,6 +740,8 @@ function openSettings(){
     <div class="card small muted"><strong style="color:var(--ink)">Twoje dane</strong><br>
       Etapy: ${STATE.stages.length} · Zadania: ${STATE.todos.length} · Wydatki: ${STATE.costs.length}<br>
       Zalogowany jako: ${esc(USER.email)}<br>Wszystko w Twojej prywatnej bazie w chmurze.</div>
+    <div class="card small" style="border-color:#5a2a24"><strong style="color:var(--ink)">Zmień bazę danych</strong><div class="muted" style="margin:5px 0 12px;line-height:1.5">Usuwa lokalnie zapisany adres i klucz Supabase. Dane w chmurze pozostają nienaruszone.</div>
+      <button class="btn-del" style="width:100%;padding:11px" onclick="resetConfig()">Odłącz bazę danych</button></div>
     <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button>
       <button class="btn-primary" onclick="saveSettings()">Zapisz</button></div>`;
   modal.classList.add('open');
@@ -735,6 +751,10 @@ async function saveSettings(){
   STATE.house=name;document.getElementById('houseName').textContent=name;
   await sb.from('settings').upsert({user_id:USER.id,house_name:name});
   closeModal();showToast('✓ Zapisano','ok');
+}
+function resetConfig(){
+  if(!confirm('Odłączyć bazę danych? Dane w chmurze pozostają nienaruszone — tylko lokalna konfiguracja zostanie usunięta.'))return;
+  localStorage.removeItem('sb_cfg');location.reload();
 }
 
 /* ---- IMGVIEW + PINCH/PAN ---- */
@@ -822,6 +842,25 @@ function initImgView(){
   },{passive:false});
 }
 
+/* ---- SWIPE NAWIGACJA ---- */
+function initSwipe(){
+  const tabs=['dash','stages','todo','costs'];
+  let sx=0,sy=0;
+  document.getElementById('app').addEventListener('touchstart',e=>{
+    if(document.getElementById('modal').classList.contains('open'))return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+  },{passive:true});
+  document.getElementById('app').addEventListener('touchend',e=>{
+    if(document.getElementById('modal').classList.contains('open'))return;
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.2)return;
+    const i=tabs.indexOf(activeTab);
+    if(dx<0&&i<tabs.length-1)go(tabs[i+1]);
+    else if(dx>0&&i>0)go(tabs[i-1]);
+  },{passive:true});
+}
+
 /* ---- TOAST ---- */
 let toastTimer;
 function showToast(m,type=''){
@@ -834,6 +873,7 @@ function showToast(m,type=''){
 
 boot();
 initImgView();
+initSwipe();
 lucide.createIcons();
 </script>
 </body>
