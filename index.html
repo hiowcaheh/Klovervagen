@@ -858,14 +858,18 @@ function initImgView(){
 function initSwipe(){
   const tabs=['dash','stages','todo','costs'];
   let sx=0,sy=0,dir=null;
+  let skip=false;
   const app=document.getElementById('app');
   const modal=document.getElementById('modal');
   app.addEventListener('touchstart',e=>{
-    if(modal.classList.contains('open'))return;
+    if(modal.classList.contains('open')){skip=true;return;}
+    // nie przechwytuj gestów startujących na przewijalnym pasku filtrów
+    if(e.target.closest('.filterbar')){skip=true;return;}
+    skip=false;
     sx=e.touches[0].clientX;sy=e.touches[0].clientY;dir=null;
   },{passive:true});
   app.addEventListener('touchmove',e=>{
-    if(modal.classList.contains('open'))return;
+    if(skip)return;
     if(!dir){
       const dx=Math.abs(e.touches[0].clientX-sx);
       const dy=Math.abs(e.touches[0].clientY-sy);
@@ -874,7 +878,7 @@ function initSwipe(){
     if(dir==='h')e.preventDefault();
   },{passive:false});
   app.addEventListener('touchend',e=>{
-    if(modal.classList.contains('open'))return;
+    if(skip)return;
     const dx=e.changedTouches[0].clientX-sx;
     const dy=e.changedTouches[0].clientY-sy;
     // ignoruj gest "wstecz" iOS (start od lewej krawędzi)
