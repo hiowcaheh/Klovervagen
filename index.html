@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0f0d0a">
 <title>Klövervägen 12</title>
 <link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
   :root{
     --bg:#0f0d0a;--panel:#1a1714;--panel-2:#232019;--line:#353028;--ink:#f2eadb;
@@ -60,7 +61,7 @@
     display:grid;grid-template-columns:repeat(4,1fr);padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
   nav.tabs button{background:none;color:var(--muted);font-size:10px;display:flex;flex-direction:column;
     align-items:center;gap:3px;padding:6px 4px;border-radius:12px;transition:color .15s;position:relative}
-  nav.tabs button .ic{font-size:21px;transition:transform .2s}
+  nav.tabs button .ic{line-height:0;transition:transform .2s}
   nav.tabs button.active{color:var(--accent)}
   nav.tabs button.active .ic{transform:scale(1.1)}
   nav.tabs button::after{content:'';display:block;height:2px;width:0;background:var(--accent);
@@ -86,7 +87,6 @@
   .stagecard{cursor:pointer;transition:background .12s}.stagecard:active{background:var(--panel-2)}
   .stage-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
   .empty{text-align:center;color:var(--muted);padding:48px 20px}
-  .empty .big{font-size:42px;margin-bottom:10px}
   .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
   .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;
     box-shadow:0 2px 8px rgba(0,0,0,.2)}
@@ -152,13 +152,24 @@
   .gal-item img{width:100%;height:100%;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:block;cursor:zoom-in}
   .gal-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);border:none;color:#fff;
     width:28px;height:28px;border-radius:50%;font-size:13px;display:grid;place-items:center;cursor:pointer}
+
+  /* Lucide icons */
+  .lucide{stroke-width:1.75;display:inline-block;vertical-align:middle}
+  nav.tabs button .ic .lucide{width:22px;height:22px}
+  .icon-btn .lucide{width:17px;height:17px}
+  .fab .lucide{width:26px;height:26px;stroke-width:2.5}
+  .empty .lucide{width:52px;height:52px;opacity:.2;display:block;margin:0 auto 14px}
+  .setup-icon .lucide{width:54px;height:54px;color:var(--accent)}
 </style>
 </head>
 <body>
 
 <!-- SETUP -->
 <div id="setup">
-  <div style="text-align:center"><div style="font-size:46px">🔧</div><h1 style="font-size:22px;margin-top:8px">Konfiguracja</h1></div>
+  <div style="text-align:center;padding-top:16px">
+    <div class="setup-icon"><i data-lucide="wrench"></i></div>
+    <h1 style="font-size:22px;margin-top:12px">Konfiguracja</h1>
+  </div>
   <div class="card">
     <p class="small muted" style="margin-top:0">Aplikacja potrzebuje połączenia z Twoją bazą Supabase. Wklej dwie wartości z panelu Supabase (Project Settings → API).</p>
     <div class="field"><label>Project URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
@@ -191,18 +202,18 @@
   <header class="top">
     <div><h1 id="houseName">Klövervägen 12</h1><div class="sub" id="topSub">Centrum remontu</div></div>
     <div class="row" style="gap:8px">
-      <button class="icon-btn" onclick="openGallery()" title="Zdjęcia domu">🖼️</button>
-      <button class="icon-btn" onclick="openSettings()">⚙️</button>
-      <button class="icon-btn" onclick="logout()">⏻</button>
+      <button class="icon-btn" onclick="openGallery()" title="Zdjęcia domu"><i data-lucide="images"></i></button>
+      <button class="icon-btn" onclick="openSettings()"><i data-lucide="settings"></i></button>
+      <button class="icon-btn" onclick="logout()"><i data-lucide="log-out"></i></button>
     </div>
   </header>
   <main id="view"><div class="loadwrap"><div class="spinner"></div>Wczytywanie…</div></main>
-  <button class="fab" id="fab" onclick="fabAction()" style="display:none">+</button>
+  <button class="fab" id="fab" onclick="fabAction()" style="display:none"><i data-lucide="plus"></i></button>
   <nav class="tabs">
-    <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic">📊</span>Przegląd</button>
-    <button data-tab="stages" onclick="go('stages')"><span class="ic">🧱</span>Etapy</button>
-    <button data-tab="todo" onclick="go('todo')"><span class="ic">✓</span>Zadania</button>
-    <button data-tab="costs" onclick="go('costs')"><span class="ic">💰</span>Wydatki</button>
+    <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
+    <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
+    <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
+    <button data-tab="costs" onclick="go('costs')"><span class="ic"><i data-lucide="receipt"></i></span>Wydatki</button>
   </nav>
 </div>
 
@@ -311,7 +322,8 @@ function stageById(id){return STATE.stages.find(s=>s.id===id);}
 function spentOn(id){return STATE.costs.filter(c=>c.stage_id===id).reduce((a,c)=>a+Number(c.amount||0),0);}
 function progressOf(id){const t=STATE.todos.filter(x=>x.stage_id===id);if(!t.length)return null;return Math.round(t.filter(x=>x.done).length/t.length*100);}
 function esc(s){return(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
-function emptyBlock(t,s){return`<div class="empty"><div class="big">📋</div><div><strong>${t}</strong></div><div class="small" style="margin-top:6px">${s}</div></div>`;}
+function emptyBlock(t,s){return`<div class="empty"><i data-lucide="inbox"></i><div><strong>${t}</strong></div><div class="small" style="margin-top:6px">${s}</div></div>`;}
+function ic(name,size){return`<i data-lucide="${name}" style="width:${size||14}px;height:${size||14}px;flex-shrink:0;vertical-align:middle"></i>`;}
 
 /* ============ NAWIGACJA ============ */
 function go(tab){
@@ -327,6 +339,7 @@ function render(){
   else if(activeTab==='stages')v.innerHTML=renderStages();
   else if(activeTab==='todo')v.innerHTML=renderTodo();
   else if(activeTab==='costs')v.innerHTML=renderCosts();
+  lucide.createIcons();
 }
 
 /* ============ WIDOKI ============ */
@@ -365,7 +378,7 @@ function renderStages(){
       <div class="row between"><div class="row" style="gap:8px"><span class="stage-dot" style="background:${s.color}"></span><strong>${esc(s.name)}</strong></div>
       <span class="pill ${priClass(s.priority)}">${priLabel(s.priority)}</span></div>
       ${s.note?`<div class="small muted" style="margin-top:8px">${esc(s.note)}</div>`:''}
-      <div class="row between small muted" style="margin-top:10px"><span>💰 ${money(sp)} / ${money(s.budget)}</span><span>✓ ${pr===null?'0':pr}% · ${n} zadań</span></div>
+      <div class="row between small muted" style="margin-top:10px"><span>${money(sp)} / ${money(s.budget)}</span><span>${pr===null?'0':pr}% · ${n} zadań</span></div>
       <div class="barwrap"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div></div>`;});
   return h;
 }
@@ -416,7 +429,7 @@ function renderCosts(){
       <div class="entry date" style="margin-top:3px">${fmtDate(c.date)}${st?' · '+esc(st.name):''}</div></div>
       <span class="cost">${money(c.amount)}</span></div>
       ${c.note?`<div class="small muted" style="margin-top:8px">${esc(c.note)}</div>`:''}
-      ${c.file_path?`<div id="att-${c.id}" class="small muted" style="margin-top:8px">📎 ładowanie załącznika…</div>`:''}</div>`;});
+      ${c.file_path?`<div id="att-${c.id}" class="small muted" style="margin-top:8px">ładowanie załącznika…</div>`:''}</div>`;});
   setTimeout(()=>{list.forEach(c=>{if(c.file_path)loadAttachment(c);});},50);
   return h;
 }
@@ -425,9 +438,13 @@ async function loadAttachment(c){
   try{
     const{data,error}=await sb.storage.from('paragony').createSignedUrl(c.file_path,3600);
     if(error)throw error;
-    if(c.file_type==='image'){el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`;}
-    else{el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">📄 ${esc(c.file_name||'dokument.pdf')}</div>`;}
-  }catch(e){el.textContent='📎 nie udało się wczytać załącznika';}
+    if(c.file_type==='image'){
+      el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`;
+    }else{
+      el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">${ic('file-text',14)} ${esc(c.file_name||'dokument.pdf')}</div>`;
+      lucide.createIcons();
+    }
+  }catch(e){el.textContent='Nie udało się wczytać załącznika';}
 }
 
 function setCostFilter(f){costFilter=f;render();}
@@ -452,8 +469,8 @@ async function openGallery(){
   sheet.innerHTML=`
     <div class="row between" style="margin-bottom:16px">
       <h2 style="margin:0">Zdjęcia domu</h2>
-      <label style="display:flex;align-items:center;gap:5px;background:var(--accent);color:#1a0f06;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer">
-        + Dodaj
+      <label style="display:flex;align-items:center;gap:6px;background:var(--accent);color:#1a0f06;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer">
+        <i data-lucide="plus" style="width:15px;height:15px"></i>Dodaj
         <input type="file" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(this)">
       </label>
     </div>
@@ -462,6 +479,7 @@ async function openGallery(){
       <button class="btn-ghost" onclick="closeModal()">Zamknij</button>
     </div>`;
   modal.classList.add('open');
+  lucide.createIcons();
   await loadGallery();
 }
 
@@ -470,7 +488,10 @@ async function loadGallery(){
   try{
     const{data,error}=await sb.storage.from('paragony').list(USER.id+'/galeria',{limit:60,sortBy:{column:'created_at',order:'desc'}});
     const files=(data||[]).filter(f=>f.name&&f.name!=='.emptyFolderPlaceholder');
-    if(!files.length){grid.innerHTML='<div class="empty"><div class="big">📷</div><div>Brak zdjęć domu</div><div class="small" style="margin-top:6px">Naciśnij + Dodaj, aby wgrać zdjęcia</div></div>';return;}
+    if(!files.length){
+      grid.innerHTML='<div class="empty"><i data-lucide="camera"></i><div>Brak zdjęć domu</div><div class="small" style="margin-top:6px">Naciśnij + Dodaj, aby wgrać zdjęcia</div></div>';
+      lucide.createIcons();return;
+    }
     const urls=await Promise.all(files.map(async f=>{
       const path=USER.id+'/galeria/'+f.name;
       const{data:sd}=await sb.storage.from('paragony').createSignedUrl(path,3600);
@@ -483,7 +504,10 @@ async function loadGallery(){
 
 function renderGalleryGrid(){
   const grid=document.getElementById('galGrid');if(!grid)return;
-  if(!galleryData.length){grid.innerHTML='<div class="empty"><div class="big">📷</div><div>Brak zdjęć domu</div></div>';return;}
+  if(!galleryData.length){
+    grid.innerHTML='<div class="empty"><i data-lucide="camera"></i><div>Brak zdjęć domu</div></div>';
+    lucide.createIcons();return;
+  }
   grid.innerHTML=`<div class="gal-grid">${galleryData.map(p=>`<div class="gal-item">
     <img src="${p.url}" onclick="viewImg('${p.url}')">
     <button class="gal-del" onclick="event.stopPropagation();delGalleryPhoto('${p.path}')">✕</button>
@@ -562,7 +586,7 @@ function openStage(id){
   const s=stageById(id);const sp=spentOn(id),bp=s.budget?Math.round(sp/s.budget*100):0;
   const td=STATE.todos.filter(t=>t.stage_id===id),co=STATE.costs.filter(c=>c.stage_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
   sheet.innerHTML=`<div class="row between"><h2><span class="stage-dot" style="display:inline-block;background:${s.color};margin-right:8px"></span>${esc(s.name)}</h2>
-    <button class="icon-btn" onclick="editStage('${id}')">✏️</button></div>
+    <button class="icon-btn" onclick="editStage('${id}')"><i data-lucide="pencil"></i></button></div>
     ${s.note?`<div class="small muted" style="margin:6px 0 14px">${esc(s.note)}</div>`:'<div style="height:8px"></div>'}
     <div class="kpi-grid"><div class="kpi"><div class="lbl">Budżet</div><div class="val">${money(s.budget)}</div></div>
     <div class="kpi"><div class="lbl">Wydano</div><div class="val ${bp>100?'red':'accent'}">${money(sp)}</div></div></div>
@@ -576,6 +600,7 @@ function openStage(id){
     ${co.length?co.map(c=>`<div class="entry"><div class="row between"><strong style="font-size:14px">${esc(c.title)}</strong><span class="cost">${money(c.amount)}</span></div><div class="date">${fmtDate(c.date)}</div></div>`).join(''):'<div class="small muted">Brak wydatków w tym etapie.</div>'}
     <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
   modal.classList.add('open');
+  lucide.createIcons();
 }
 
 /* ---- ZADANIE ---- */
@@ -621,13 +646,14 @@ function editCost(id){
     <div class="field"><label>Data</label><input id="c_date" type="date" value="${c.date}"></div>
     <div class="field"><label>Notatka</label><textarea id="c_note" rows="2" placeholder="dostawca, gwarancja, uwagi...">${esc(c.note||'')}</textarea></div>
     <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
-      <label class="upload">📎 Wybierz zdjęcie lub zrób nowe
+      <label class="upload"><i data-lucide="upload" style="width:16px;height:16px"></i>Wybierz zdjęcie lub zrób nowe
         <input type="file" accept="image/*,application/pdf" style="display:none" onchange="handleFile(this)"></label>
-      <div id="filePreview">${c.file_path?`<div class="filechip">📎 obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
+      <div id="filePreview">${c.file_path?`<div class="filechip">${ic('paperclip',14)} obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
     <div class="sheet-actions">${id?`<button class="btn-del" onclick="delCost('${id}')">Usuń</button>`:''}
       <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
       <button class="btn-primary" id="saveBtn" onclick="saveCost('${id||''}')">Zapisz</button></div>`;
   sheet.dataset.keepFile='1';modal.classList.add('open');
+  lucide.createIcons();
 }
 function removeExisting(id){sheet.dataset.keepFile='0';document.getElementById('filePreview').innerHTML='<div class="small muted">Załącznik zostanie usunięty po zapisie.</div>';}
 function handleFile(input){
@@ -635,11 +661,13 @@ function handleFile(input){
   sheet.dataset.keepFile='0';
   if(file.type.startsWith('image')){
     compressImage(file,(blob,url)=>{pendingFile={blob,type:'image',name:file.name.replace(/\.\w+$/,'.jpg')};
-      document.getElementById('filePreview').innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">🖼️ ${esc(file.name)} (${(blob.size/1024).toFixed(0)} KB)<span class="x" onclick="clearFile()">✕</span></div>`;});
+      document.getElementById('filePreview').innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">${ic('image',14)} ${esc(file.name)} (${(blob.size/1024).toFixed(0)} KB)<span class="x" onclick="clearFile()">✕</span></div>`;
+      lucide.createIcons();});
   }else if(file.type==='application/pdf'){
     if(file.size>4*1024*1024)return showToast('PDF zbyt duży (max 4MB)');
     pendingFile={blob:file,type:'pdf',name:file.name};
-    document.getElementById('filePreview').innerHTML=`<div class="filechip">📄 ${esc(file.name)}<span class="x" onclick="clearFile()">✕</span></div>`;
+    document.getElementById('filePreview').innerHTML=`<div class="filechip">${ic('file-text',14)} ${esc(file.name)}<span class="x" onclick="clearFile()">✕</span></div>`;
+    lucide.createIcons();
   }else showToast('Dozwolone: zdjęcie lub PDF');
 }
 function clearFile(){pendingFile=null;sheet.dataset.keepFile='0';document.getElementById('filePreview').innerHTML='';}
@@ -806,6 +834,7 @@ function showToast(m,type=''){
 
 boot();
 initImgView();
+lucide.createIcons();
 </script>
 </body>
 </html>
