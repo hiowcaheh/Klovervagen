@@ -212,6 +212,9 @@
     animation:dotPop .9s infinite ease-in-out}
   .dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
   @keyframes dotPop{0%,60%,100%{transform:scale(.7);opacity:.4}30%{transform:scale(1);opacity:1}}
+  .msg-a strong{font-weight:700;color:var(--ink)}
+  .msg-a em{font-style:italic;color:var(--ink)}
+  .msg-a code{background:var(--panel-2);padding:1px 6px;border-radius:5px;font-size:12px;font-family:monospace;color:var(--accent)}
 </style>
 </head>
 <body>
@@ -1013,9 +1016,18 @@ function closeAI(){
   if(aiListening)stopVoice();
 }
 function escNl(s){return(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])).replace(/\n/g,'<br>');}
+function renderMd(s){
+  return(s||'')
+    .replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\n/g,'<br>');
+}
 function renderAI(){
   const c=document.getElementById('ai-msgs');if(!c)return;
-  c.innerHTML=aiDisp.map(m=>'<div class="msg-'+m.r+(m.cls?' '+m.cls:'')+'">'+ escNl(m.t)+'</div>').join('');
+  c.innerHTML=aiDisp.map(m=>'<div class="msg-'+m.r+(m.cls?' '+m.cls:'')+'">'+(m.r==='a'?renderMd(m.t):escNl(m.t))+'</div>').join('');
   c.scrollTop=c.scrollHeight;
 }
 function aiThink(show){
