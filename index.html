@@ -58,7 +58,7 @@
   main{padding:16px;max-width:760px;margin:0 auto}
 
   nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--panel);border-top:1px solid var(--line);
-    display:grid;grid-template-columns:repeat(4,1fr);padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
+    display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(8px + env(safe-area-inset-bottom))}
   nav.tabs button{background:none;color:var(--muted);font-size:10px;display:flex;flex-direction:column;
     align-items:center;gap:3px;padding:6px 4px;border-radius:12px;transition:color .15s;position:relative}
   nav.tabs button .ic{line-height:0;transition:transform .2s}
@@ -164,6 +164,54 @@
   @keyframes slideInLeft{from{opacity:.15;transform:translateX(-140px)}to{opacity:1;transform:translateX(0)}}
   .slide-in-right{animation:slideInRight .48s cubic-bezier(.22,.68,0,1.2) both}
   .slide-in-left{animation:slideInLeft .48s cubic-bezier(.22,.68,0,1.2) both}
+
+  /* ===== AI ASYSTENT ===== */
+  .ai-tab-btn{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;
+    align-items:center;gap:2px;padding:4px 2px;border-radius:12px;cursor:pointer}
+  .ai-tab-btn .lbl{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.6px}
+  .ai-orb{width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#e07830 0%,#9b4fd8 100%);
+    display:grid;place-items:center;
+    box-shadow:0 2px 14px rgba(155,79,216,.42);
+    animation:orbPulse 2.5s ease-in-out infinite}
+  @keyframes orbPulse{
+    0%,100%{box-shadow:0 2px 14px rgba(155,79,216,.38)}
+    50%{box-shadow:0 2px 22px rgba(155,79,216,.72),0 0 0 5px rgba(155,79,216,.13)}}
+  #ai-ov{position:fixed;inset:0;z-index:55;background:var(--bg);
+    display:flex;flex-direction:column;
+    transform:translateY(100%);transition:transform .35s cubic-bezier(.22,.68,0,1.1)}
+  #ai-ov.open{transform:translateY(0)}
+  #ai-hdr{background:rgba(15,13,10,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .ai-orb-sm{width:30px;height:30px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(135deg,#e07830 0%,#9b4fd8 100%);
+    display:grid;place-items:center;box-shadow:0 2px 8px rgba(155,79,216,.4)}
+  #ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;
+    gap:10px;-webkit-overflow-scrolling:touch}
+  .msg-u{align-self:flex-end;max-width:82%;background:var(--accent);color:#1a0f06;
+    padding:10px 14px;border-radius:18px 18px 4px 18px;font-size:14px;line-height:1.5;word-break:break-word}
+  .msg-a{align-self:flex-start;max-width:88%;background:var(--panel);border:1px solid var(--line);
+    padding:12px 14px;border-radius:4px 18px 18px 18px;font-size:14px;line-height:1.65;word-break:break-word}
+  .msg-a.welcome{border-left:3px solid var(--accent)}
+  #ai-bar{padding:10px 12px;padding-bottom:calc(env(safe-area-inset-bottom)+10px);
+    border-top:1px solid var(--line);background:var(--panel);
+    display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+  #ai-txt{flex:1;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    border-radius:20px;padding:10px 14px;font-size:15px;resize:none;max-height:100px;
+    outline:none;line-height:1.4;font-family:inherit;overflow-y:auto}
+  #ai-txt:focus{border-color:var(--accent)}
+  .ai-cb{width:42px;height:42px;border-radius:50%;border:none;
+    display:grid;place-items:center;cursor:pointer;transition:all .15s;flex-shrink:0}
+  #ai-mic{background:var(--panel-2);border:1px solid var(--line);color:var(--muted)}
+  #ai-mic.on{background:var(--red);border-color:var(--red);color:#fff}
+  #ai-snd{background:var(--accent);color:#1a0f06}
+  #ai-snd:disabled{opacity:.4}
+  .dots{display:flex;gap:5px;align-items:center}
+  .dots span{width:7px;height:7px;border-radius:50%;background:var(--muted);
+    animation:dotPop .9s infinite ease-in-out}
+  .dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+  @keyframes dotPop{0%,60%,100%{transform:scale(.7);opacity:.4}30%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -216,6 +264,10 @@
   <nav class="tabs">
     <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
     <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
+    <button class="ai-tab-btn" onclick="openAI()">
+      <div class="ai-orb"><i data-lucide="sparkles" style="width:16px;height:16px;color:#fff;stroke-width:2.5"></i></div>
+      <span class="lbl">ASYSTENT</span>
+    </button>
     <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
     <button data-tab="costs" onclick="go('costs')"><span class="ic"><i data-lucide="receipt"></i></span>Wydatki</button>
   </nav>
@@ -227,6 +279,27 @@
   <img id="imgviewImg" src="" alt="">
 </div>
 <div class="toast" id="toast"></div>
+
+<div id="ai-ov">
+  <div id="ai-hdr">
+    <div class="row" style="gap:10px">
+      <div class="ai-orb-sm"><i data-lucide="sparkles" style="width:13px;height:13px;color:#fff;stroke-width:2.5"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:15px">Asystent AI</div>
+        <div style="font-size:10px;color:var(--muted);letter-spacing:.5px">Klövervägen 12</div>
+      </div>
+    </div>
+    <button class="icon-btn" onclick="closeAI()"><i data-lucide="x"></i></button>
+  </div>
+  <div id="ai-msgs"></div>
+  <div id="ai-bar">
+    <textarea id="ai-txt" rows="1" placeholder="Napisz lub naciśnij mikrofon…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+    <button class="ai-cb" id="ai-mic" onclick="toggleVoice()" title="Mów"><i data-lucide="mic" style="width:18px;height:18px"></i></button>
+    <button class="ai-cb" id="ai-snd" onclick="sendAI()" title="Wyślij"><i data-lucide="send" style="width:18px;height:18px"></i></button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -749,6 +822,9 @@ async function delCost(id){
 function openSettings(){
   sheet.innerHTML=`<h2>Ustawienia</h2>
     <div class="field"><label>Nazwa domu / projektu</label><input id="s_house" value="${esc(STATE.house)}"></div>
+    <div class="field"><label>Klucz Groq API (AI Asystent)</label>
+      <input id="s_groq" type="password" value="${esc(localStorage.getItem('groq_key')||'')}" placeholder="gsk_...">
+      <div class="small muted" style="margin-top:4px">Bezpłatny klucz: groq.com → Console → API Keys</div></div>
     <div class="card small muted"><strong style="color:var(--ink)">Twoje dane</strong><br>
       Etapy: ${STATE.stages.length} · Zadania: ${STATE.todos.length} · Wydatki: ${STATE.costs.length}<br>
       Zalogowany jako: ${esc(USER.email)}<br>Wszystko w Twojej prywatnej bazie w chmurze.</div>
@@ -761,6 +837,8 @@ function openSettings(){
 async function saveSettings(){
   const name=document.getElementById('s_house').value.trim()||'Klövervägen 12';
   STATE.house=name;document.getElementById('houseName').textContent=name;
+  const groq=document.getElementById('s_groq').value.trim();
+  if(groq)localStorage.setItem('groq_key',groq);else localStorage.removeItem('groq_key');
   await sb.from('settings').upsert({user_id:USER.id,house_name:name});
   closeModal();showToast('✓ Zapisano','ok');
 }
@@ -863,6 +941,7 @@ function initSwipe(){
   const modal=document.getElementById('modal');
   app.addEventListener('touchstart',e=>{
     if(modal.classList.contains('open')){skip=true;return;}
+    if(document.getElementById('ai-ov').classList.contains('open')){skip=true;return;}
     // nie przechwytuj gestów startujących na przewijalnym pasku filtrów
     if(e.target.closest('.filterbar')){skip=true;return;}
     skip=false;
@@ -899,6 +978,237 @@ function showToast(m,type=''){
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
 }
+
+/* ============ AI ASYSTENT ============ */
+function getAIKey(){return localStorage.getItem('groq_key')||'';}
+const AI_TOOLS=[
+  {type:'function',function:{name:'query_data',description:'Pobiera i filtruje dane (stages/todos/costs). Uzywaj do odpowiedzi na pytania o dane.',parameters:{type:'object',properties:{table:{type:'string',enum:['stages','todos','costs']},stage_id:{type:'string'},category:{type:'string',enum:['materials','labor','tools','other']},done:{type:'boolean'},date_from:{type:'string',description:'YYYY-MM-DD'},date_to:{type:'string',description:'YYYY-MM-DD'}},required:['table']}}},
+  {type:'function',function:{name:'add_stage',description:'Dodaje nowy etap remontu',parameters:{type:'object',properties:{name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number',description:'Budzet w SEK'},note:{type:'string'}},required:['name']}}},
+  {type:'function',function:{name:'edit_stage',description:'Edytuje istniejacy etap',parameters:{type:'object',properties:{id:{type:'string'},name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number'},note:{type:'string'}},required:['id']}}},
+  {type:'function',function:{name:'delete_stage',description:'Usuwa etap remontu',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
+  {type:'function',function:{name:'add_todo',description:'Dodaje nowe zadanie',parameters:{type:'object',properties:{text:{type:'string'},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},priority:{type:'string',enum:['high','mid','low']}},required:['text']}}},
+  {type:'function',function:{name:'edit_todo',description:'Edytuje zadanie lub zmienia status ukonczenia (done:true/false)',parameters:{type:'object',properties:{id:{type:'string'},text:{type:'string'},stage_id:{type:'string'},priority:{type:'string',enum:['high','mid','low']},done:{type:'boolean'}},required:['id']}}},
+  {type:'function',function:{name:'delete_todo',description:'Usuwa zadanie',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
+  {type:'function',function:{name:'add_cost',description:'Dodaje nowy wydatek',parameters:{type:'object',properties:{title:{type:'string',description:'Opis wydatku'},amount:{type:'number',description:'Kwota w SEK'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},date:{type:'string',description:'YYYY-MM-DD, domyslnie dzisiaj'},note:{type:'string'}},required:['title','amount']}}},
+  {type:'function',function:{name:'edit_cost',description:'Edytuje wydatek',parameters:{type:'object',properties:{id:{type:'string'},title:{type:'string'},amount:{type:'number'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string'},date:{type:'string'},note:{type:'string'}},required:['id']}}},
+  {type:'function',function:{name:'delete_cost',description:'Usuwa wydatek',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
+];
+
+let aiDisp=[],aiHist=[],aiListening=false,aiSpeech=null;
+
+function openAI(){
+  if(!getAIKey()){showToast('Dodaj klucz Groq API w Ustawieniach','err');openSettings();return;}
+  const ov=document.getElementById('ai-ov');
+  ov.classList.add('open');
+  if(!aiDisp.length){
+    const tc=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
+    const done=STATE.todos.filter(t=>t.done).length;
+    aiDisp=[{r:'a',cls:'welcome',t:'Cześć! 👋 Jestem asystentem Klövervägen 12.\n\nAktualnie:\n• '+STATE.stages.length+' etapów remontu\n• '+STATE.todos.length+' zadań ('+done+' ukończonych)\n• '+money(tc)+' wydatków łącznie\n\nMożesz pisać lub użyć mikrofonu 🎤\nCo zrobimy?'}];
+    renderAI();
+  }
+  setTimeout(()=>document.getElementById('ai-txt')?.focus(),350);
+  lucide.createIcons();
+}
+function closeAI(){
+  document.getElementById('ai-ov').classList.remove('open');
+  if(aiListening)stopVoice();
+}
+function escNl(s){return(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])).replace(/\n/g,'<br>');}
+function renderAI(){
+  const c=document.getElementById('ai-msgs');if(!c)return;
+  c.innerHTML=aiDisp.map(m=>'<div class="msg-'+m.r+(m.cls?' '+m.cls:'')+'">'+ escNl(m.t)+'</div>').join('');
+  c.scrollTop=c.scrollHeight;
+}
+function aiThink(show){
+  const c=document.getElementById('ai-msgs');if(!c)return;
+  if(show){
+    const el=document.createElement('div');el.className='msg-a';el.id='ai-th';
+    el.innerHTML='<div class="dots"><span></span><span></span><span></span></div>';
+    c.appendChild(el);c.scrollTop=c.scrollHeight;
+  }else{const el=document.getElementById('ai-th');if(el)el.remove();}
+}
+function aiSysPrompt(){
+  const today=new Date().toISOString().slice(0,10);
+  const tc=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
+  const done=STATE.todos.filter(t=>t.done).length;
+  return 'Jestes inteligentnym asystentem aplikacji Dziennik Remontu dla Klovervagen 12.\n'+
+    'Odpowiadaj ZAWSZE po polsku. Badz zwiezly i pomocny. Dzisiaj: '+today+'\n\n'+
+    'Mozesz wykonywac pelny zakres operacji:\n'+
+    '- Etapy: dodawac, edytowac, usuwac, przegladac\n'+
+    '- Zadania: dodawac, edytowac, usuwac, oznaczac ukonczone/otwarte\n'+
+    '- Wydatki: dodawac, edytowac, usuwac, filtrowac po etapie/kategorii/dacie\n\n'+
+    'Stan: '+STATE.stages.length+' etapow, '+STATE.todos.length+' zadan ('+done+' ukonczonych), laczne wydatki: '+tc+' kr\n\n'+
+    'Aktualne etapy:\n'+
+    (STATE.stages.map(s=>'- "'+s.name+'" [ID:'+s.id+'] priorytet:'+s.priority+' budzet:'+s.budget+'kr').join('\n')||'(brak etapow)')+'\n\n'+
+    'Kategorie wydatkow: materials=Materialy, labor=Robocizna, tools=Narzedzia, other=Inne\n'+
+    'Priorytety: high=Wysoki, mid=Sredni, low=Niski\n\n'+
+    'ZASADY:\n'+
+    '1. Gdy cos niejednoznaczne (np. kilka etapow pasuje) - zapytaj i podaj opcje.\n'+
+    '2. Po akcji potwierdz co zrobiono (np. "Dodano wydatek Elektryka 10000 kr").\n'+
+    '3. Listy formatuj czytelnie z kwotami, datami i etapami.\n'+
+    '4. Przed usunieciem potwierdz co zostanie usuniete.\n'+
+    '5. Uzywaj query_data do odpowiedzi na pytania o dane.';
+}
+async function callGroq(msgs){
+  const key=getAIKey();if(!key)throw new Error('Brak klucza Groq API. Dodaj go w Ustawieniach.');
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:msgs,tools:AI_TOOLS,tool_choice:'auto',max_tokens:1024,temperature:0.2})
+  });
+  if(!res.ok){const t=await res.text();throw new Error('Groq '+res.status+': '+t);}
+  return res.json();
+}
+async function execTool(fn,args){
+  const today=new Date().toISOString().slice(0,10);
+  switch(fn){
+    case 'query_data':{
+      let data=[];
+      if(args.table==='stages'){data=[...STATE.stages];}
+      else if(args.table==='todos'){
+        data=[...STATE.todos];
+        if(args.stage_id)data=data.filter(t=>t.stage_id===args.stage_id);
+        if(typeof args.done==='boolean')data=data.filter(t=>t.done===args.done);
+      }else if(args.table==='costs'){
+        data=[...STATE.costs];
+        if(args.stage_id)data=data.filter(c=>c.stage_id===args.stage_id);
+        if(args.category)data=data.filter(c=>(c.category||'other')===args.category);
+        if(args.date_from)data=data.filter(c=>c.date>=args.date_from);
+        if(args.date_to)data=data.filter(c=>c.date<=args.date_to);
+      }
+      const total=data.reduce((a,c)=>a+Number(c.amount||0),0);
+      return{data,count:data.length,total};
+    }
+    case 'add_stage':{
+      const{data,error}=await sb.from('stages').insert({user_id:USER.id,name:args.name,priority:args.priority||'mid',budget:args.budget||0,color:'#e07830',note:args.note||''}).select().single();
+      if(error)return{error:error.message};
+      STATE.stages.push(data);render();return{success:true,id:data.id,name:data.name};
+    }
+    case 'edit_stage':{
+      const{id,...f}=args;const clean={};
+      if(f.name!==undefined)clean.name=f.name;if(f.priority!==undefined)clean.priority=f.priority;
+      if(f.budget!==undefined)clean.budget=f.budget;if(f.note!==undefined)clean.note=f.note;
+      const{error}=await sb.from('stages').update(clean).eq('id',id);
+      if(error)return{error:error.message};
+      const s=STATE.stages.find(x=>x.id===id);if(s)Object.assign(s,clean);render();return{success:true};
+    }
+    case 'delete_stage':{
+      const{error}=await sb.from('stages').delete().eq('id',args.id);
+      if(error)return{error:error.message};
+      STATE.stages=STATE.stages.filter(s=>s.id!==args.id);
+      STATE.todos.forEach(t=>{if(t.stage_id===args.id)t.stage_id=null;});
+      STATE.costs.forEach(c=>{if(c.stage_id===args.id)c.stage_id=null;});
+      render();return{success:true};
+    }
+    case 'add_todo':{
+      const{data,error}=await sb.from('todos').insert({user_id:USER.id,text:args.text,stage_id:args.stage_id||null,priority:args.priority||'mid',done:false}).select().single();
+      if(error)return{error:error.message};
+      STATE.todos.push(data);render();return{success:true,id:data.id};
+    }
+    case 'edit_todo':{
+      const{id,...f}=args;const clean={};
+      if(f.text!==undefined)clean.text=f.text;if(f.stage_id!==undefined)clean.stage_id=f.stage_id;
+      if(f.priority!==undefined)clean.priority=f.priority;if(typeof f.done==='boolean')clean.done=f.done;
+      const{error}=await sb.from('todos').update(clean).eq('id',id);
+      if(error)return{error:error.message};
+      const t=STATE.todos.find(x=>x.id===id);if(t)Object.assign(t,clean);render();return{success:true};
+    }
+    case 'delete_todo':{
+      const{error}=await sb.from('todos').delete().eq('id',args.id);
+      if(error)return{error:error.message};
+      STATE.todos=STATE.todos.filter(t=>t.id!==args.id);render();return{success:true};
+    }
+    case 'add_cost':{
+      const{data,error}=await sb.from('costs').insert({user_id:USER.id,title:args.title,amount:args.amount,category:args.category||'other',stage_id:args.stage_id||null,date:args.date||today,note:args.note||''}).select().single();
+      if(error)return{error:error.message};
+      STATE.costs.push(data);render();return{success:true,id:data.id};
+    }
+    case 'edit_cost':{
+      const{id,...f}=args;const clean={};
+      if(f.title!==undefined)clean.title=f.title;if(f.amount!==undefined)clean.amount=f.amount;
+      if(f.category!==undefined)clean.category=f.category;if(f.stage_id!==undefined)clean.stage_id=f.stage_id;
+      if(f.date!==undefined)clean.date=f.date;if(f.note!==undefined)clean.note=f.note;
+      const{error}=await sb.from('costs').update(clean).eq('id',id);
+      if(error)return{error:error.message};
+      const c=STATE.costs.find(x=>x.id===id);if(c)Object.assign(c,clean);render();return{success:true};
+    }
+    case 'delete_cost':{
+      const{error}=await sb.from('costs').delete().eq('id',args.id);
+      if(error)return{error:error.message};
+      STATE.costs=STATE.costs.filter(c=>c.id!==args.id);render();return{success:true};
+    }
+    default:return{error:'Nieznana funkcja: '+fn};
+  }
+}
+async function sendAI(){
+  const inp=document.getElementById('ai-txt');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='auto';
+  document.getElementById('ai-snd').disabled=true;
+  aiDisp.push({r:'u',t:text});
+  aiHist.push({role:'user',content:text});
+  renderAI();aiThink(true);
+  try{
+    let msgs=[{role:'system',content:aiSysPrompt()},...aiHist];
+    let resp=await callGroq(msgs);
+    let choice=resp.choices?.[0];
+    let iters=0;
+    while(choice?.finish_reason==='tool_calls'&&iters<8){
+      iters++;
+      const tcs=choice.message.tool_calls;
+      msgs.push(choice.message);
+      const results=[];
+      for(const tc of tcs){
+        let args={};try{args=JSON.parse(tc.function.arguments);}catch(e){}
+        const r=await execTool(tc.function.name,args);
+        results.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(r)});
+      }
+      msgs.push(...results);
+      resp=await callGroq(msgs);
+      choice=resp.choices?.[0];
+    }
+    const msg=choice?.message?.content||'Nie udało się przetworzyć. Spróbuj ponownie.';
+    aiThink(false);
+    aiDisp.push({r:'a',t:msg});
+    aiHist.push({role:'assistant',content:msg});
+    renderAI();
+  }catch(e){
+    aiThink(false);
+    aiDisp.push({r:'a',t:'❌ Błąd: '+e.message});
+    renderAI();console.error(e);
+  }
+  document.getElementById('ai-snd').disabled=false;
+}
+function toggleVoice(){aiListening?stopVoice():startVoice();}
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Rozpoznawanie mowy niedostępne','err');return;}
+  aiSpeech=new SR();aiSpeech.lang='pl-PL';aiSpeech.continuous=false;aiSpeech.interimResults=true;
+  aiSpeech.onstart=()=>{
+    aiListening=true;
+    const btn=document.getElementById('ai-mic');btn.classList.add('on');
+    btn.innerHTML='<i data-lucide="mic-off" style="width:18px;height:18px"></i>';lucide.createIcons();
+    document.getElementById('ai-txt').placeholder='Słucham…';
+  };
+  aiSpeech.onresult=e=>{
+    document.getElementById('ai-txt').value=Array.from(e.results).map(r=>r[0].transcript).join('');
+  };
+  aiSpeech.onend=()=>{
+    aiListening=false;
+    const btn=document.getElementById('ai-mic');btn.classList.remove('on');
+    btn.innerHTML='<i data-lucide="mic" style="width:18px;height:18px"></i>';lucide.createIcons();
+    document.getElementById('ai-txt').placeholder='Napisz lub naciśnij mikrofon…';
+    const t=document.getElementById('ai-txt').value.trim();if(t)sendAI();
+  };
+  aiSpeech.onerror=e=>{
+    aiListening=false;
+    const btn=document.getElementById('ai-mic');btn.classList.remove('on');
+    btn.innerHTML='<i data-lucide="mic" style="width:18px;height:18px"></i>';lucide.createIcons();
+    if(e.error!=='no-speech'&&e.error!=='aborted')showToast('Mikrofon: '+e.error,'err');
+  };
+  aiSpeech.start();
+}
+function stopVoice(){if(aiSpeech){aiSpeech.stop();aiSpeech=null;}aiListening=false;}
 
 boot();
 initImgView();
