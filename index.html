@@ -32,9 +32,9 @@
   .field input,.field textarea,.field select{background:var(--panel-2);border:1px solid var(--line);
     color:var(--ink);border-radius:10px;padding:12px;font-size:16px;width:100%;outline:none;transition:border-color .15s}
   .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
-  .btn-primary{background:var(--accent);color:#1a0f06;font-weight:700;padding:13px;border-radius:10px;font-size:16px;transition:opacity .15s}
-  .btn-primary:active{opacity:.85}
-  .btn-primary:disabled{opacity:.5}
+  .btn-primary{background:var(--accent);color:#1a0f06;font-weight:700;padding:14px;border-radius:14px;font-size:16px;letter-spacing:.1px;transition:transform .12s,opacity .12s;-webkit-tap-highlight-color:transparent}
+  .btn-primary:active{opacity:.82;transform:scale(.97)}
+  .btn-primary:disabled{opacity:.4}
   .err{color:var(--red);font-size:13px;text-align:center;min-height:18px}
   .hint{color:var(--muted);font-size:12px;text-align:center;line-height:1.5;max-width:340px}
   .linkbtn{background:none;color:var(--accent);font-size:13px;text-decoration:underline;padding:4px}
@@ -101,10 +101,11 @@
   @keyframes up{from{transform:translateY(44px);opacity:.5}to{transform:translateY(0);opacity:1}}
   .sheet h2{font-size:19px;margin-bottom:16px}
   .sheet .field{margin-bottom:12px}
-  .sheet-actions{display:flex;gap:10px;margin-top:12px}
-  .sheet-actions button{flex:1;padding:13px;border-radius:10px;font-size:15px;font-weight:600}
-  .btn-ghost{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
-  .btn-del{background:#3a1c18;color:#e88;border:1px solid #5a2a24}
+  .sheet-actions{display:flex;gap:10px;margin-top:16px}
+  .sheet-actions button{flex:1;padding:14px;border-radius:14px;font-size:15px;font-weight:600;letter-spacing:.1px;transition:transform .12s,opacity .12s;-webkit-tap-highlight-color:transparent}
+  .sheet-actions button:active{transform:scale(.97);opacity:.85}
+  .btn-ghost{background:var(--panel-2);color:var(--ink);border:1.5px solid var(--line)}
+  .btn-del{background:rgba(208,80,80,.12);color:#e07070;border:1.5px solid rgba(208,80,80,.3)}
   .seg{display:flex;gap:5px;background:var(--panel-2);padding:4px;border-radius:10px}
   .seg button{flex:1;background:none;color:var(--muted);padding:9px;border-radius:7px;font-size:13px;font-weight:600;transition:all .15s}
   .seg button.on{background:var(--accent);color:#1a0f06}
@@ -471,6 +472,23 @@ function svgDonut(val,total,size,color){
       fill="var(--ink)" font-size="${Math.round(size*.21)}px" font-weight="800">${lbl}</text>
   </svg>`;
 }
+function svgMultiDonut(segs,size){
+  const r=(size-10)/2,c=size/2,circ=2*Math.PI*r;
+  const tot=segs.reduce((a,s)=>a+s.v,0);
+  let out=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/>`;
+  if(tot>0){
+    const gapFrac=tot>0?Math.min(2/circ,.015):0;
+    let off=circ/4;
+    segs.forEach(s=>{
+      if(!s.v)return;
+      const frac=s.v/tot;
+      const len=Math.max(0,(frac-gapFrac)*circ);
+      out+=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${s.color}" stroke-width="7" stroke-dasharray="${len.toFixed(1)} ${(circ-len).toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="butt"/>`;
+      off-=frac*circ;
+    });
+  }
+  out+=`</svg>`;return out;
+}
 
 /* ============ NAWIGACJA ============ */
 const TAB_ORDER=['dash','stages','todo','costs'];
@@ -503,37 +521,50 @@ function openKpiStages(){
   const ts=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
   const pct=tb?Math.round(ts/tb*100):0;
   const ord={high:0,mid:1,low:2};
-  const highs=STATE.stages.filter(s=>s.priority==='high').length;
-  const mids=STATE.stages.filter(s=>s.priority==='mid').length;
-  const lows=STATE.stages.filter(s=>s.priority==='low').length;
+  const priColors={high:'var(--red)',mid:'var(--accent)',low:'var(--blue)'};
   const ss=[...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]);
+  // donut segmenty: każdy etap wg jego koloru, wartość = budżet etapu
+  const budgSegs=ss.filter(s=>Number(s.budget)>0).map(s=>({v:Number(s.budget),color:s.color}));
+  // jeśli brak budżetów, pokaż segmenty wg priorytetu
+  const priSegs=['high','mid','low'].map(p=>({v:ss.filter(s=>s.priority===p).length,color:priColors[p]})).filter(s=>s.v>0);
+  const donutSegs=budgSegs.length?budgSegs:priSegs;
   let rows='';
   ss.forEach(s=>{
     const sp=spentOn(s.id),bp=s.budget?Math.round(sp/s.budget*100):0;
-    rows+=`<div style="margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    const priColor=priColors[s.priority];
+    rows+=`<div style="margin-bottom:13px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
         <span class="stage-dot" style="background:${s.color}"></span>
         <span style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</span>
-        <span class="pill ${priClass(s.priority)}" style="padding:2px 7px;font-size:10px">${priLabel(s.priority)}</span>
+        <span style="font-size:10px;font-weight:700;color:${priColor};background:${priColor}1a;border:1px solid ${priColor}4d;padding:2px 7px;border-radius:20px">${priLabel(s.priority)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div class="barwrap" style="flex:1;height:6px"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div>
-        <span style="font-size:11px;color:${bp>100?'var(--red)':'var(--muted)'};flex-shrink:0">${moneyShort(sp)}${s.budget?' / '+moneyShort(s.budget):''} kr</span>
+        <div class="barwrap" style="flex:1;height:5px"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div>
+        <span style="font-size:11px;color:${bp>100?'var(--red)':'var(--muted)'};flex-shrink:0;font-variant-numeric:tabular-nums">${money(sp)}${s.budget?' / '+money(s.budget):''}</span>
       </div>
     </div>`;
   });
+  // legenda donuta
+  let legend='';
+  if(budgSegs.length){
+    ss.filter(s=>Number(s.budget)>0).forEach(s=>{
+      const share=tb?Math.round(Number(s.budget)/tb*100):0;
+      legend+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+        <span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)">${esc(s.name)}</span>
+        <span style="font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">${share}%</span>
+      </div>`;
+    });
+  }
   sheet.innerHTML=`<h2>Etapy remontu</h2>
-    <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px">
-      ${svgDonut(ts,tb,88,'var(--accent)')}
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Budżet wykorzystany</div>
-        <div style="font-size:26px;font-weight:800;letter-spacing:-.6px">${pct}%</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">${moneyShort(ts)} / ${moneyShort(tb)} kr</div>
-        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-          ${highs?`<span class="pill p-high" style="padding:2px 8px;font-size:10px">W: ${highs}</span>`:''}
-          ${mids?`<span class="pill p-mid" style="padding:2px 8px;font-size:10px">Ś: ${mids}</span>`:''}
-          ${lows?`<span class="pill p-low" style="padding:2px 8px;font-size:10px">N: ${lows}</span>`:''}
-        </div>
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:16px">
+      ${svgMultiDonut(donutSegs,96)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Budżet całkowity</div>
+        <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums">${money(tb)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">Wydano: ${money(ts)}</div>
+        <div style="font-size:14px;font-weight:700;margin-top:4px;color:${pct>100?'var(--red)':pct>85?'var(--accent)':'var(--green)'}">${pct}% budżetu</div>
+        ${legend?`<div style="margin-top:10px">${legend}</div>`:''}
       </div>
     </div>
     <div style="border-top:1px solid var(--line);padding-top:14px">${rows||'<div class="small muted">Brak etapów</div>'}</div>
@@ -1551,7 +1582,7 @@ function initPullToRefresh(){
     const dy=e.touches[0].clientY-startY;
     const dx=Math.abs(e.touches[0].clientX-startX);
     if(dy<0||dx>dy*.7)return;
-    if(dy>70&&!pullActive){pullActive=true;ptr.classList.add('show');}
+    if(dy>130&&!pullActive){pullActive=true;ptr.classList.add('show');}
   },{passive:true});
   document.addEventListener('touchend',async()=>{
     if(!pullActive||refreshing)return;
