@@ -169,14 +169,14 @@
   .ai-tab-btn{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;
     align-items:center;gap:2px;padding:4px 2px;border-radius:12px;cursor:pointer}
   .ai-tab-btn .lbl{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.6px}
-  .ai-orb{width:36px;height:36px;border-radius:50%;
-    background:linear-gradient(135deg,#e07830 0%,#9b4fd8 100%);
+  .ai-orb{width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
     display:grid;place-items:center;
-    box-shadow:0 2px 14px rgba(155,79,216,.42);
+    box-shadow:0 2px 14px rgba(34,197,94,.45);
     animation:orbPulse 2.5s ease-in-out infinite}
   @keyframes orbPulse{
-    0%,100%{box-shadow:0 2px 14px rgba(155,79,216,.38)}
-    50%{box-shadow:0 2px 22px rgba(155,79,216,.72),0 0 0 5px rgba(155,79,216,.13)}}
+    0%,100%{box-shadow:0 2px 14px rgba(34,197,94,.4)}
+    50%{box-shadow:0 2px 24px rgba(34,197,94,.78),0 0 0 6px rgba(34,197,94,.15)}}
   #ai-ov{position:fixed;inset:0;z-index:55;background:var(--bg);
     display:flex;flex-direction:column;
     transform:translateY(100%);transition:transform .35s cubic-bezier(.22,.68,0,1.1)}
@@ -185,8 +185,8 @@
     border-bottom:1px solid var(--line);padding:12px 16px;
     display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
   .ai-orb-sm{width:30px;height:30px;border-radius:50%;flex-shrink:0;
-    background:linear-gradient(135deg,#e07830 0%,#9b4fd8 100%);
-    display:grid;place-items:center;box-shadow:0 2px 8px rgba(155,79,216,.4)}
+    background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);
+    display:grid;place-items:center;box-shadow:0 2px 8px rgba(34,197,94,.45)}
   #ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;
     gap:10px;-webkit-overflow-scrolling:touch}
   .msg-u{align-self:flex-end;max-width:82%;background:var(--accent);color:#1a0f06;
@@ -265,8 +265,7 @@
     <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
     <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
     <button class="ai-tab-btn" onclick="openAI()">
-      <div class="ai-orb"><i data-lucide="sparkles" style="width:16px;height:16px;color:#fff;stroke-width:2.5"></i></div>
-      <span class="lbl">ASYSTENT</span>
+      <div class="ai-orb"><span style="font-size:19px;line-height:1">🍀</span></div>
     </button>
     <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
     <button data-tab="costs" onclick="go('costs')"><span class="ic"><i data-lucide="receipt"></i></span>Wydatki</button>
@@ -283,7 +282,7 @@
 <div id="ai-ov">
   <div id="ai-hdr">
     <div class="row" style="gap:10px">
-      <div class="ai-orb-sm"><i data-lucide="sparkles" style="width:13px;height:13px;color:#fff;stroke-width:2.5"></i></div>
+      <div class="ai-orb-sm"><span style="font-size:14px;line-height:1">🍀</span></div>
       <div>
         <div style="font-weight:700;font-size:15px">Asystent AI</div>
         <div style="font-size:10px;color:var(--muted);letter-spacing:.5px">Klövervägen 12</div>
@@ -822,9 +821,9 @@ async function delCost(id){
 function openSettings(){
   sheet.innerHTML=`<h2>Ustawienia</h2>
     <div class="field"><label>Nazwa domu / projektu</label><input id="s_house" value="${esc(STATE.house)}"></div>
-    <div class="field"><label>Klucz Groq API (AI Asystent)</label>
-      <input id="s_groq" type="password" value="${esc(localStorage.getItem('groq_key')||'')}" placeholder="gsk_...">
-      <div class="small muted" style="margin-top:4px">Bezpłatny klucz: groq.com → Console → API Keys</div></div>
+    <div class="field"><label>Klucz Claude API (AI Asystent)</label>
+      <input id="s_groq" type="password" value="${esc(localStorage.getItem('claude_key')||'')}" placeholder="sk-ant-...">
+      <div class="small muted" style="margin-top:4px">Klucz: console.anthropic.com → API Keys</div></div>
     <div class="card small muted"><strong style="color:var(--ink)">Twoje dane</strong><br>
       Etapy: ${STATE.stages.length} · Zadania: ${STATE.todos.length} · Wydatki: ${STATE.costs.length}<br>
       Zalogowany jako: ${esc(USER.email)}<br>Wszystko w Twojej prywatnej bazie w chmurze.</div>
@@ -838,7 +837,7 @@ async function saveSettings(){
   const name=document.getElementById('s_house').value.trim()||'Klövervägen 12';
   STATE.house=name;document.getElementById('houseName').textContent=name;
   const groq=document.getElementById('s_groq').value.trim();
-  if(groq)localStorage.setItem('groq_key',groq);else localStorage.removeItem('groq_key');
+  if(groq)localStorage.setItem('claude_key',groq);else localStorage.removeItem('claude_key');
   await sb.from('settings').upsert({user_id:USER.id,house_name:name});
   closeModal();showToast('✓ Zapisano','ok');
 }
@@ -980,24 +979,24 @@ function showToast(m,type=''){
 }
 
 /* ============ AI ASYSTENT ============ */
-function getAIKey(){return localStorage.getItem('groq_key')||'';}
+function getAIKey(){return localStorage.getItem('claude_key')||'';}
 const AI_TOOLS=[
-  {type:'function',function:{name:'query_data',description:'Pobiera i filtruje dane (stages/todos/costs). Uzywaj do odpowiedzi na pytania o dane.',parameters:{type:'object',properties:{table:{type:'string',enum:['stages','todos','costs']},stage_id:{type:'string'},category:{type:'string',enum:['materials','labor','tools','other']},done:{type:'boolean'},date_from:{type:'string',description:'YYYY-MM-DD'},date_to:{type:'string',description:'YYYY-MM-DD'}},required:['table']}}},
-  {type:'function',function:{name:'add_stage',description:'Dodaje nowy etap remontu',parameters:{type:'object',properties:{name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number',description:'Budzet w SEK'},note:{type:'string'}},required:['name']}}},
-  {type:'function',function:{name:'edit_stage',description:'Edytuje istniejacy etap',parameters:{type:'object',properties:{id:{type:'string'},name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number'},note:{type:'string'}},required:['id']}}},
-  {type:'function',function:{name:'delete_stage',description:'Usuwa etap remontu',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
-  {type:'function',function:{name:'add_todo',description:'Dodaje nowe zadanie',parameters:{type:'object',properties:{text:{type:'string'},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},priority:{type:'string',enum:['high','mid','low']}},required:['text']}}},
-  {type:'function',function:{name:'edit_todo',description:'Edytuje zadanie lub zmienia status ukonczenia (done:true/false)',parameters:{type:'object',properties:{id:{type:'string'},text:{type:'string'},stage_id:{type:'string'},priority:{type:'string',enum:['high','mid','low']},done:{type:'boolean'}},required:['id']}}},
-  {type:'function',function:{name:'delete_todo',description:'Usuwa zadanie',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
-  {type:'function',function:{name:'add_cost',description:'Dodaje nowy wydatek',parameters:{type:'object',properties:{title:{type:'string',description:'Opis wydatku'},amount:{type:'number',description:'Kwota w SEK'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},date:{type:'string',description:'YYYY-MM-DD, domyslnie dzisiaj'},note:{type:'string'}},required:['title','amount']}}},
-  {type:'function',function:{name:'edit_cost',description:'Edytuje wydatek',parameters:{type:'object',properties:{id:{type:'string'},title:{type:'string'},amount:{type:'number'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string'},date:{type:'string'},note:{type:'string'}},required:['id']}}},
-  {type:'function',function:{name:'delete_cost',description:'Usuwa wydatek',parameters:{type:'object',properties:{id:{type:'string'}},required:['id']}}},
+  {name:'query_data',description:'Pobiera i filtruje dane (stages/todos/costs). Uzywaj do odpowiedzi na pytania o dane.',input_schema:{type:'object',properties:{table:{type:'string',enum:['stages','todos','costs']},stage_id:{type:'string'},category:{type:'string',enum:['materials','labor','tools','other']},done:{type:'boolean'},date_from:{type:'string',description:'YYYY-MM-DD'},date_to:{type:'string',description:'YYYY-MM-DD'}},required:['table']}},
+  {name:'add_stage',description:'Dodaje nowy etap remontu',input_schema:{type:'object',properties:{name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number',description:'Budzet w SEK'},note:{type:'string'}},required:['name']}},
+  {name:'edit_stage',description:'Edytuje istniejacy etap',input_schema:{type:'object',properties:{id:{type:'string'},name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number'},note:{type:'string'}},required:['id']}},
+  {name:'delete_stage',description:'Usuwa etap remontu',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
+  {name:'add_todo',description:'Dodaje nowe zadanie',input_schema:{type:'object',properties:{text:{type:'string'},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},priority:{type:'string',enum:['high','mid','low']}},required:['text']}},
+  {name:'edit_todo',description:'Edytuje zadanie lub zmienia status ukonczenia (done:true/false)',input_schema:{type:'object',properties:{id:{type:'string'},text:{type:'string'},stage_id:{type:'string'},priority:{type:'string',enum:['high','mid','low']},done:{type:'boolean'}},required:['id']}},
+  {name:'delete_todo',description:'Usuwa zadanie',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
+  {name:'add_cost',description:'Dodaje nowy wydatek',input_schema:{type:'object',properties:{title:{type:'string',description:'Opis wydatku'},amount:{type:'number',description:'Kwota w SEK'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},date:{type:'string',description:'YYYY-MM-DD, domyslnie dzisiaj'},note:{type:'string'}},required:['title','amount']}},
+  {name:'edit_cost',description:'Edytuje wydatek',input_schema:{type:'object',properties:{id:{type:'string'},title:{type:'string'},amount:{type:'number'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string'},date:{type:'string'},note:{type:'string'}},required:['id']}},
+  {name:'delete_cost',description:'Usuwa wydatek',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
 ];
 
 let aiDisp=[],aiHist=[],aiListening=false,aiSpeech=null;
 
 function openAI(){
-  if(!getAIKey()){showToast('Dodaj klucz Groq API w Ustawieniach','err');openSettings();return;}
+  if(!getAIKey()){showToast('Dodaj klucz Claude API w Ustawieniach','err');openSettings();return;}
   const ov=document.getElementById('ai-ov');
   ov.classList.add('open');
   if(!aiDisp.length){
@@ -1049,14 +1048,14 @@ function aiSysPrompt(){
     '4. Przed usunieciem potwierdz co zostanie usuniete.\n'+
     '5. Uzywaj query_data do odpowiedzi na pytania o dane.';
 }
-async function callGroq(msgs){
-  const key=getAIKey();if(!key)throw new Error('Brak klucza Groq API. Dodaj go w Ustawieniach.');
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+async function callClaude(msgs){
+  const key=getAIKey();if(!key)throw new Error('Brak klucza Claude API. Dodaj go w Ustawieniach.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
-    body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:msgs,tools:AI_TOOLS,tool_choice:'auto',max_tokens:1024,temperature:0.2})
+    headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1024,system:aiSysPrompt(),messages:msgs,tools:AI_TOOLS})
   });
-  if(!res.ok){const t=await res.text();throw new Error('Groq '+res.status+': '+t);}
+  if(!res.ok){const t=await res.text();throw new Error('Claude '+res.status+': '+t);}
   return res.json();
 }
 async function execTool(fn,args){
@@ -1149,28 +1148,30 @@ async function sendAI(){
   aiHist.push({role:'user',content:text});
   renderAI();aiThink(true);
   try{
-    let msgs=[{role:'system',content:aiSysPrompt()},...aiHist];
-    let resp=await callGroq(msgs);
-    let choice=resp.choices?.[0];
-    let iters=0;
-    while(choice?.finish_reason==='tool_calls'&&iters<8){
+    let msgs=[...aiHist];
+    let iters=0,finalText='';
+    while(iters<8){
       iters++;
-      const tcs=choice.message.tool_calls;
-      msgs.push(choice.message);
-      const results=[];
-      for(const tc of tcs){
-        let args={};try{args=JSON.parse(tc.function.arguments);}catch(e){}
-        const r=await execTool(tc.function.name,args);
-        results.push({role:'tool',tool_call_id:tc.id,content:JSON.stringify(r)});
+      const resp=await callClaude(msgs);
+      if(resp.stop_reason==='tool_use'){
+        msgs.push({role:'assistant',content:resp.content});
+        const toolResults=[];
+        for(const b of resp.content){
+          if(b.type==='tool_use'){
+            const r=await execTool(b.name,b.input);
+            toolResults.push({type:'tool_result',tool_use_id:b.id,content:JSON.stringify(r)});
+          }
+        }
+        msgs.push({role:'user',content:toolResults});
+      }else{
+        finalText=(resp.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+        msgs.push({role:'assistant',content:resp.content});
+        break;
       }
-      msgs.push(...results);
-      resp=await callGroq(msgs);
-      choice=resp.choices?.[0];
     }
-    const msg=choice?.message?.content||'Nie udało się przetworzyć. Spróbuj ponownie.';
+    aiHist=msgs;
     aiThink(false);
-    aiDisp.push({r:'a',t:msg});
-    aiHist.push({role:'assistant',content:msg});
+    aiDisp.push({r:'a',t:finalText||'Gotowe.'});
     renderAI();
   }catch(e){
     aiThink(false);
