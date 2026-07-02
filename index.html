@@ -97,8 +97,14 @@
   .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.65);display:none;align-items:flex-end}
   .modal.open{display:flex}
   .sheet{background:var(--panel);width:100%;max-height:93vh;overflow-y:auto;border-radius:20px 20px 0 0;
-    border-top:1px solid var(--line);padding:20px 18px calc(26px + env(safe-area-inset-bottom));animation:up .22s ease}
+    border-top:1px solid var(--line);padding:20px 18px calc(26px + env(safe-area-inset-bottom));animation:up .22s ease;position:relative}
   @keyframes up{from{transform:translateY(44px);opacity:.5}to{transform:translateY(0);opacity:1}}
+  .sheet-xbtn{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:9px;
+    background:var(--panel-2);border:1.5px solid var(--line);color:var(--muted);
+    font-size:15px;font-weight:700;display:grid;place-items:center;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;z-index:2;transition:background .12s}
+  .sheet-xbtn:active{background:var(--line)}
+  .sheet h2{padding-right:40px}
   .sheet h2{font-size:19px;margin-bottom:16px}
   .sheet .field{margin-bottom:12px}
   .sheet-actions{display:flex;gap:10px;margin-top:16px}
@@ -167,16 +173,14 @@
   .slide-in-left{animation:slideInLeft .48s cubic-bezier(.22,.68,0,1.2) both}
 
   /* ===== AI ASYSTENT ===== */
-  .ai-tab-btn{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;
-    align-items:center;gap:2px;padding:4px 2px;border-radius:12px;cursor:pointer}
-  .ai-orb{width:40px;height:40px;border-radius:50%;
-    background:linear-gradient(145deg,#4ade80 0%,#16a34a 55%,#14532d 100%);
-    display:grid;place-items:center;
-    box-shadow:0 0 0 1.5px rgba(74,222,128,.25),0 4px 18px rgba(22,163,74,.55),inset 0 1.5px 0 rgba(255,255,255,.22);
-    animation:orbPulse 3s ease-in-out infinite}
-  @keyframes orbPulse{
-    0%,100%{box-shadow:0 0 0 1.5px rgba(74,222,128,.22),0 4px 18px rgba(22,163,74,.5),inset 0 1.5px 0 rgba(255,255,255,.22)}
-    50%{box-shadow:0 0 0 5px rgba(74,222,128,.12),0 4px 28px rgba(22,163,74,.75),inset 0 1.5px 0 rgba(255,255,255,.22)}}
+  .ai-tab-btn{background:none;border:none;color:#4ade80;display:flex;flex-direction:column;
+    align-items:center;gap:3px;padding:6px 4px;border-radius:12px;cursor:pointer;font-size:10px;
+    letter-spacing:.3px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:color .15s;position:relative}
+  .ai-tab-btn:active{color:#86efac}
+  .ai-tab-btn .ic{line-height:0;transition:transform .2s}
+  .ai-tab-btn:active .ic{transform:scale(1.1)}
+  .ai-tab-btn::after{content:'';display:block;height:2px;width:24px;background:#4ade80;
+    border-radius:2px;margin:1px auto 0}
   #ai-ov{position:fixed;inset:0;z-index:55;background:var(--bg);
     display:flex;flex-direction:column;
     transform:translateY(100%);transition:transform .35s cubic-bezier(.22,.68,0,1.1)}
@@ -184,10 +188,7 @@
   #ai-hdr{background:rgba(15,13,10,.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     border-bottom:1px solid var(--line);padding:12px 16px;
     display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-  .ai-orb-sm{width:30px;height:30px;border-radius:50%;flex-shrink:0;
-    background:linear-gradient(145deg,#4ade80 0%,#16a34a 55%,#14532d 100%);
-    display:grid;place-items:center;
-    box-shadow:0 0 0 1px rgba(74,222,128,.2),0 2px 10px rgba(22,163,74,.5),inset 0 1px 0 rgba(255,255,255,.2)}
+  .ai-hdr-icon{flex-shrink:0;display:flex;align-items:center}
   #ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;
     gap:10px;-webkit-overflow-scrolling:touch}
   .msg-u{align-self:flex-end;max-width:82%;background:var(--accent);color:#1a0f06;
@@ -321,7 +322,8 @@
     <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
     <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
     <button class="ai-tab-btn" onclick="openAI()">
-      <div class="ai-orb"><span style="font-size:19px;line-height:1">🍀</span></div>
+      <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.5"/><circle cx="15" cy="9" r="3.5"/><circle cx="9" cy="15" r="3.5"/><circle cx="15" cy="15" r="3.5"/><line x1="12" y1="14" x2="12" y2="22"/></svg></span>
+      AI
     </button>
     <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
     <button data-tab="costs" onclick="go('costs')"><span class="ic"><i data-lucide="receipt"></i></span>Wydatki</button>
@@ -339,7 +341,7 @@
 <div id="ai-ov">
   <div id="ai-hdr">
     <div class="row" style="gap:10px">
-      <div class="ai-orb-sm"><span style="font-size:14px;line-height:1">🍀</span></div>
+      <span class="ai-hdr-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.5"/><circle cx="15" cy="9" r="3.5"/><circle cx="9" cy="15" r="3.5"/><circle cx="15" cy="15" r="3.5"/><line x1="12" y1="14" x2="12" y2="22"/></svg></span>
       <div>
         <div style="font-weight:700;font-size:15px">Asystent AI</div>
         <div style="font-size:10px;color:var(--muted);letter-spacing:.5px">Klövervägen 12</div>
@@ -472,12 +474,12 @@ function svgDonut(val,total,size,color){
       fill="var(--ink)" font-size="${Math.round(size*.21)}px" font-weight="800">${lbl}</text>
   </svg>`;
 }
-function svgMultiDonut(segs,size){
+function svgMultiDonut(segs,size,centerLbl){
   const r=(size-10)/2,c=size/2,circ=2*Math.PI*r;
   const tot=segs.reduce((a,s)=>a+s.v,0);
   let out=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0"><circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/>`;
   if(tot>0){
-    const gapFrac=tot>0?Math.min(2/circ,.015):0;
+    const gapFrac=Math.min(2/circ,.015);
     let off=circ/4;
     segs.forEach(s=>{
       if(!s.v)return;
@@ -487,6 +489,7 @@ function svgMultiDonut(segs,size){
       off-=frac*circ;
     });
   }
+  if(centerLbl)out+=`<text x="${c}" y="${c}" text-anchor="middle" dominant-baseline="middle" fill="var(--ink)" font-size="${Math.round(size*.19)}px" font-weight="800">${centerLbl}</text>`;
   out+=`</svg>`;return out;
 }
 
@@ -520,56 +523,52 @@ function openKpiStages(){
   const tb=STATE.stages.reduce((a,s)=>a+Number(s.budget||0),0);
   const ts=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
   const pct=tb?Math.round(ts/tb*100):0;
+  const remain=tb-ts;
   const ord={high:0,mid:1,low:2};
   const priColors={high:'var(--red)',mid:'var(--accent)',low:'var(--blue)'};
   const ss=[...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]);
-  // donut segmenty: każdy etap wg jego koloru, wartość = budżet etapu
-  const budgSegs=ss.filter(s=>Number(s.budget)>0).map(s=>({v:Number(s.budget),color:s.color}));
-  // jeśli brak budżetów, pokaż segmenty wg priorytetu
-  const priSegs=['high','mid','low'].map(p=>({v:ss.filter(s=>s.priority===p).length,color:priColors[p]})).filter(s=>s.v>0);
-  const donutSegs=budgSegs.length?budgSegs:priSegs;
+  const costSegs=ss.filter(s=>spentOn(s.id)>0).map(s=>({v:spentOn(s.id),color:s.color}));
+  const donutSegs=costSegs.length?costSegs:[{v:1,color:'var(--line)'}];
+  const donutLbl=costSegs.length&&tb?pct+'%':'–';
+  let legend='';
+  ss.filter(s=>spentOn(s.id)>0).sort((a,b)=>spentOn(b.id)-spentOn(a.id)).forEach(s=>{
+    const sp=spentOn(s.id),share=ts?Math.round(sp/ts*100):0;
+    legend+=`<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+      <span style="width:9px;height:9px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</span>
+      <span style="font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)">${share}%</span>
+      <span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">${moneyShort(sp)} kr</span>
+    </div>`;
+  });
   let rows='';
   ss.forEach(s=>{
     const sp=spentOn(s.id),bp=s.budget?Math.round(sp/s.budget*100):0;
-    const priColor=priColors[s.priority];
     rows+=`<div style="margin-bottom:13px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
         <span class="stage-dot" style="background:${s.color}"></span>
         <span style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</span>
-        <span style="font-size:10px;font-weight:700;color:${priColor};background:${priColor}1a;border:1px solid ${priColor}4d;padding:2px 7px;border-radius:20px">${priLabel(s.priority)}</span>
+        <span style="font-size:10px;font-weight:700;color:${priColors[s.priority]};background:${priColors[s.priority]}22;border:1px solid ${priColors[s.priority]}55;padding:2px 7px;border-radius:20px">${priLabel(s.priority)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <div class="barwrap" style="flex:1;height:5px"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div>
+        <div class="barwrap" style="flex:1;height:5px;margin-top:0"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div>
         <span style="font-size:11px;color:${bp>100?'var(--red)':'var(--muted)'};flex-shrink:0;font-variant-numeric:tabular-nums">${money(sp)}${s.budget?' / '+money(s.budget):''}</span>
       </div>
     </div>`;
   });
-  // legenda donuta
-  let legend='';
-  if(budgSegs.length){
-    ss.filter(s=>Number(s.budget)>0).forEach(s=>{
-      const share=tb?Math.round(Number(s.budget)/tb*100):0;
-      legend+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-        <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
-        <span style="font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)">${esc(s.name)}</span>
-        <span style="font-size:11px;font-weight:700;font-variant-numeric:tabular-nums">${share}%</span>
-      </div>`;
-    });
-  }
-  sheet.innerHTML=`<h2>Etapy remontu</h2>
-    <div style="display:flex;align-items:center;gap:18px;margin-bottom:16px">
-      ${svgMultiDonut(donutSegs,96)}
+  setSheet(`<h2>Etapy remontu</h2>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px">
+      ${svgMultiDonut(donutSegs,120,donutLbl)}
       <div style="flex:1;min-width:0">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Budżet całkowity</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px">Budżet</div>
         <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums">${money(tb)}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums">Wydano: ${money(ts)}</div>
-        <div style="font-size:14px;font-weight:700;margin-top:4px;color:${pct>100?'var(--red)':pct>85?'var(--accent)':'var(--green)'}">${pct}% budżetu</div>
-        ${legend?`<div style="margin-top:10px">${legend}</div>`:''}
+        <div style="font-size:12px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums">Wydano: <strong style="color:${pct>100?'var(--red)':pct>85?'var(--accent)':'var(--ink)'}">${money(ts)}</strong></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums">Pozostało: <strong style="color:${remain<0?'var(--red)':'var(--green)'}">${money(remain)}</strong></div>
+        ${costSegs.length===0?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Brak wydatków — wykres wypełni się gdy dodasz koszty.</div>':''}
       </div>
     </div>
+    ${legend?`<div style="background:var(--panel-2);border-radius:12px;padding:12px 14px;margin-bottom:16px">${legend}</div>`:''}
     <div style="border-top:1px solid var(--line);padding-top:14px">${rows||'<div class="small muted">Brak etapów</div>'}</div>
-    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
-  modal.classList.add('open');lucide.createIcons();
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
 function openKpiTodos(){
@@ -591,9 +590,9 @@ function openKpiTodos(){
     </div>`;
   });
   if(open>6)rows+=`<div class="small muted" style="text-align:center;padding-top:8px">+${open-6} więcej</div>`;
-  sheet.innerHTML=`<h2>Zadania</h2>
+  setSheet(`<h2>Zadania</h2>
     <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px">
-      ${svgDonut(done,total,88,'var(--green)')}
+      ${svgDonut(done,total,96,'var(--green)')}
       <div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Ukończone</div>
         <div style="font-size:26px;font-weight:800;letter-spacing:-.6px">${done} <span style="font-size:15px;color:var(--muted);font-weight:500">/ ${total}</span></div>
@@ -606,54 +605,83 @@ function openKpiTodos(){
       </div>
     </div>
     ${rows?`<div style="border-top:1px solid var(--line);padding-top:14px">${rows}</div>`:'<div class="small muted" style="text-align:center;padding:16px 0">Wszystkie zadania ukończone 🎉</div>'}
-    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
-  modal.classList.add('open');
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
+let _weekKpiView='days',_weekKpiSel=null;
+function switchWeekView(v){_weekKpiView=v;_weekKpiSel=null;openKpiWeek();}
+function weekBarClick(key,hasAmt){if(!hasAmt)return;_weekKpiSel=_weekKpiSel===key?null:key;openKpiWeek();}
 function openKpiWeek(){
-  const dayData=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(Date.now()-i*24*3600*1000);
-    const iso=d.toISOString().slice(0,10);
-    const lbl=d.toLocaleDateString('pl-PL',{weekday:'short'}).slice(0,2);
-    const amt=STATE.costs.filter(c=>c.date===iso).reduce((a,c)=>a+Number(c.amount||0),0);
-    dayData.push({iso,lbl,amt,today:i===0});
+  let data;
+  if(_weekKpiView==='weeks'){
+    data=Array.from({length:4},(_,i)=>{
+      const endMs=Date.now()-(3-i)*7*86400000,startMs=endMs-6*86400000;
+      const start=new Date(startMs).toISOString().slice(0,10),end=new Date(endMs).toISOString().slice(0,10);
+      return{key:start,start,end,lbl:i===3?'ten':'-'+(4-i)+'t',amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===3};
+    });
+  }else if(_weekKpiView==='months'){
+    data=Array.from({length:6},(_,i)=>{
+      const ref=new Date();ref.setDate(1);ref.setMonth(ref.getMonth()-(5-i));
+      const y=ref.getFullYear(),m=ref.getMonth();
+      const start=`${y}-${String(m+1).padStart(2,'0')}-01`;
+      const end=`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}`;
+      return{key:start,start,end,lbl:ref.toLocaleDateString('pl-PL',{month:'short'}).replace('.',''),amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===5};
+    });
+  }else{
+    data=Array.from({length:7},(_,i)=>{
+      const d=new Date(Date.now()-(6-i)*86400000),iso=d.toISOString().slice(0,10);
+      return{key:iso,start:iso,end:iso,lbl:d.toLocaleDateString('pl-PL',{weekday:'short'}).slice(0,2),amt:STATE.costs.filter(c=>c.date===iso).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===6};
+    });
   }
-  const weekTotal=dayData.reduce((a,d)=>a+d.amt,0);
-  const maxAmt=Math.max(1,...dayData.map(d=>d.amt));
-  let bars=`<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:20px">`;
-  dayData.forEach(d=>{
-    const h=d.amt?Math.max(4,Math.round(d.amt/maxAmt*60)):2;
-    const bg=d.today?'var(--accent)':d.amt?'var(--panel-2)':'var(--line)';
-    const border=d.today?'var(--accent)':'var(--line)';
-    bars+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:80px;gap:4px">
-      <div style="width:100%;height:${h}px;background:${bg};border:1px solid ${border};border-radius:5px 5px 0 0"></div>
-      <div style="font-size:9px;color:${d.today?'var(--accent)':'var(--muted)'};font-weight:${d.today?700:400}">${d.lbl}</div>
+  const total=data.reduce((a,d)=>a+d.amt,0);
+  const maxAmt=Math.max(1,...data.map(d=>d.amt));
+  const selKey=_weekKpiSel;
+  const tog=['days','weeks','months'].map(v=>`<button style="flex:1;padding:8px 0;border-radius:10px;font-size:12px;font-weight:600;background:${_weekKpiView===v?'var(--accent)':'var(--panel-2)'};color:${_weekKpiView===v?'#1a0f06':'var(--muted)'};border:1px solid ${_weekKpiView===v?'transparent':'var(--line)'};-webkit-tap-highlight-color:transparent" onclick="switchWeekView('${v}')">${v==='days'?'7 dni':v==='weeks'?'Tygodnie':'Miesiące'}</button>`).join('');
+  let bars='<div style="display:flex;align-items:flex-end;gap:4px;height:94px;margin:14px 0 4px">';
+  data.forEach(d=>{
+    const h=d.amt?Math.max(5,Math.round(d.amt/maxAmt*68)):2;
+    const isSel=d.key===selKey;
+    const bg=isSel?'var(--accent)':d.isNow?'var(--blue)':d.amt?'var(--panel-2)':'var(--line)';
+    const bdr=isSel?'var(--accent)':d.isNow?'var(--blue)':'var(--line)';
+    bars+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:94px;gap:3px;${d.amt?'cursor:pointer':''}" onclick="weekBarClick('${d.key}',${d.amt>0})">
+      <div style="width:100%;height:${h}px;background:${bg};border:1px solid ${bdr};border-radius:4px 4px 0 0;transition:all .15s"></div>
+      <div style="font-size:9px;color:${isSel||d.isNow?'var(--accent)':'var(--muted)'};font-weight:${isSel?700:d.isNow?600:400};text-align:center;line-height:1.1">${d.lbl}</div>
     </div>`;
   });
-  bars+=`</div>`;
-  const isos=dayData.map(d=>d.iso);
-  const weekCosts=[...STATE.costs].filter(c=>isos.includes(c.date)).sort((a,b)=>Number(b.amount)-Number(a.amount)).slice(0,5);
+  bars+='</div>';
+  const selBar=selKey?data.find(d=>d.key===selKey):null;
+  const selInfo=selBar?`<div style="background:rgba(224,120,48,.1);border:1px solid rgba(224,120,48,.3);border-radius:12px;padding:11px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:2px">${_weekKpiView==='days'?fmtDate(selBar.key):fmtDate(selBar.start)+' – '+fmtDate(selBar.end)}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums">${money(selBar.amt)}</div>
+    </div>
+    <button style="font-size:18px;line-height:1;color:var(--muted);background:none;border:none;cursor:pointer" onclick="weekBarClick('${selBar.key}',true)">✕</button>
+  </div>`:''
+  const filterStart=selBar?selBar.start:data[0].start;
+  const filterEnd=selBar?selBar.end:data[data.length-1].end;
+  const costList=[...STATE.costs].filter(c=>c.date>=filterStart&&c.date<=filterEnd).sort((a,b)=>Number(b.amount)-Number(a.amount)).slice(0,6);
   let rows='';
-  weekCosts.forEach(c=>{
+  costList.forEach(c=>{
     const st=stageById(c.stage_id);
     rows+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.title)}</div>
         <div style="font-size:11px;color:var(--muted)">${fmtDate(c.date)}${st?' · '+esc(st.name):''}</div>
       </div>
-      <span style="font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0">${moneyShort(Number(c.amount))} kr</span>
+      <span style="font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0;font-variant-numeric:tabular-nums">${money(Number(c.amount))}</span>
     </div>`;
   });
-  sheet.innerHTML=`<h2>Ten tydzień</h2>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
-      <span style="font-size:28px;font-weight:800;letter-spacing:-.8px;color:${weekTotal>0?'var(--accent)':'var(--muted)'}">${weekTotal>0?moneyShort(weekTotal)+' kr':'–'}</span>
-      <span style="font-size:12px;color:var(--muted)">ostatnie 7 dni</span>
+  const viewLabel={days:'ostatnie 7 dni',weeks:'ostatnie 4 tygodnie',months:'ostatnie 6 miesięcy'}[_weekKpiView];
+  setSheet(`<h2 style="margin-bottom:4px">Wydatki w czasie</h2>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
+      <span style="font-size:26px;font-weight:800;letter-spacing:-.7px;color:${total>0?'var(--accent)':'var(--muted)'};font-variant-numeric:tabular-nums">${total>0?money(total):'–'}</span>
+      <span style="font-size:12px;color:var(--muted)">${viewLabel}</span>
     </div>
+    <div style="display:flex;gap:6px;margin-bottom:2px">${tog}</div>
     ${bars}
-    ${rows?`<div style="border-top:1px solid var(--line);padding-top:14px">${rows}</div>`:'<div class="small muted" style="text-align:center;padding:16px 0">Brak wydatków w tym tygodniu</div>'}
-    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
-  modal.classList.add('open');
+    ${selInfo}
+    ${costList.length?`<div style="border-top:1px solid var(--line);padding-top:12px">${rows}</div>`:'<div class="small muted" style="text-align:center;padding:12px 0">Brak wydatków w tym okresie</div>'}
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
 function openKpiUrgent(){
@@ -678,10 +706,9 @@ function openKpiUrgent(){
       </div>`;
     });
   }
-  sheet.innerHTML=`<h2>Pilne zadania <span style="font-size:15px;font-weight:500;color:var(--muted)">(${urgent.length})</span></h2>
+  setSheet(`<h2>Pilne zadania <span style="font-size:15px;font-weight:500;color:var(--muted)">(${urgent.length})</span></h2>
     ${rows}
-    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
-  modal.classList.add('open');
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
 /* ============ WIDOKI ============ */
@@ -893,25 +920,21 @@ async function toggleTodo(id){
 /* ============ MODALE ============ */
 const modal=document.getElementById('modal'),sheet=document.getElementById('sheet');
 function closeModal(){modal.classList.remove('open');}
+function setSheet(html){sheet.innerHTML='<button class="sheet-xbtn" onclick="closeModal()">✕</button>'+html;modal.classList.add('open');lucide.createIcons();}
 modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
 function stageOptions(sel){let o=`<option value="">— bez etapu —</option>`;STATE.stages.forEach(s=>o+=`<option value="${s.id}" ${sel===s.id?'selected':''}>${esc(s.name)}</option>`);return o;}
 
 /* ---- GALERIA DOMU ---- */
 async function openGallery(){
-  sheet.innerHTML=`
-    <div class="row between" style="margin-bottom:16px">
-      <h2 style="margin:0">Zdjęcia domu</h2>
-      <label style="display:flex;align-items:center;gap:6px;background:var(--accent);color:#1a0f06;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer">
-        <i data-lucide="plus" style="width:15px;height:15px"></i>Dodaj
-        <input type="file" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(this)">
-      </label>
-    </div>
+  setSheet(`<h2>Zdjęcia domu</h2>
+    <label style="display:flex;align-items:center;gap:6px;background:var(--accent);color:#1a0f06;font-size:13px;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer;width:fit-content;margin-bottom:14px">
+      <i data-lucide="plus" style="width:15px;height:15px"></i>Dodaj zdjęcia
+      <input type="file" accept="image/*" multiple style="display:none" onchange="addGalleryPhotos(this)">
+    </label>
     <div id="galGrid"><div class="loadwrap"><div class="spinner"></div>Wczytywanie zdjęć…</div></div>
     <div class="sheet-actions" style="margin-top:12px">
       <button class="btn-ghost" onclick="closeModal()">Zamknij</button>
-    </div>`;
-  modal.classList.add('open');
-  lucide.createIcons();
+    </div>`);
   await loadGallery();
 }
 
@@ -977,7 +1000,7 @@ async function delGalleryPhoto(path){
 function editStage(id){
   const s=id?stageById(id):{name:'',priority:'mid',budget:'',color:'#e07830',note:''};
   const cs=['#c25b4e','#d4742a','#e0b463','#f2d24a','#6ba368','#3f9b5e','#3fa68a','#5b8aa6','#4a7ac9','#6b6bd1','#9b6bb3','#c264a8','#e0608e','#b3956b','#8a6a4a','#7d8a99','#5a6b7a','#1c2e1c'];
-  sheet.innerHTML=`<h2>${id?'Edytuj etap':'Nowy etap'}</h2>
+  setSheet(`<h2>${id?'Edytuj etap':'Nowy etap'}</h2>
     <div class="field"><label>Nazwa etapu</label><input id="f_name" value="${esc(s.name)}" placeholder="np. Dach, Elektryka"></div>
     <div class="field"><label>Priorytet</label><div class="seg" id="f_pri">
       <button data-v="high" class="${s.priority==='high'?'on':''}" onclick="segPick(this,'f_pri')">Wysoki</button>
@@ -989,8 +1012,8 @@ function editStage(id){
     <div class="field"><label>Notatka</label><textarea id="f_note" rows="2" placeholder="opis prac...">${esc(s.note)}</textarea></div>
     <div class="sheet-actions">${id?`<button class="btn-del" onclick="delStage('${id}')">Usuń</button>`:''}
       <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
-      <button class="btn-primary" id="saveBtn" onclick="saveStage('${id||''}')">Zapisz</button></div>`;
-  sheet.dataset.color=s.color;sheet.dataset.pri=s.priority;modal.classList.add('open');
+      <button class="btn-primary" id="saveBtn" onclick="saveStage('${id||''}')">Zapisz</button></div>`);
+  sheet.dataset.color=s.color;sheet.dataset.pri=s.priority;
 }
 function segPick(b,g){document.querySelectorAll(`#${g} button`).forEach(x=>x.classList.remove('on'));b.classList.add('on');sheet.dataset.pri=b.dataset.v;}
 function colorPick(el,c){document.querySelectorAll('#f_color div').forEach(d=>d.style.border='3px solid transparent');el.style.border='3px solid #fff';sheet.dataset.color=c;}
@@ -1017,7 +1040,7 @@ async function delStage(id){
 function openStage(id){
   const s=stageById(id);const sp=spentOn(id),bp=s.budget?Math.round(sp/s.budget*100):0;
   const td=STATE.todos.filter(t=>t.stage_id===id),co=STATE.costs.filter(c=>c.stage_id===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  sheet.innerHTML=`<div class="row between"><h2><span class="stage-dot" style="display:inline-block;background:${s.color};margin-right:8px"></span>${esc(s.name)}</h2>
+  setSheet(`<div class="row between" style="padding-right:44px"><h2><span class="stage-dot" style="display:inline-block;background:${s.color};margin-right:8px"></span>${esc(s.name)}</h2>
     <button class="icon-btn" onclick="editStage('${id}')"><i data-lucide="pencil"></i></button></div>
     ${s.note?`<div class="small muted" style="margin:6px 0 14px">${esc(s.note)}</div>`:'<div style="height:8px"></div>'}
     <div class="kpi-grid"><div class="kpi"><div class="lbl">Budżet</div><div class="val">${money(s.budget)}</div></div>
@@ -1030,15 +1053,13 @@ function openStage(id){
       <span class="${t.done?'todo-text done':''}" style="font-size:14px">${esc(t.text)}</span></div>`).join(''):'<div class="small muted">Brak zadań w tym etapie.</div>'}
     <h3 style="margin:16px 2px 8px;font-size:15px">Wydatki</h3>
     ${co.length?co.map(c=>`<div class="entry"><div class="row between"><strong style="font-size:14px">${esc(c.title)}</strong><span class="cost">${money(c.amount)}</span></div><div class="date">${fmtDate(c.date)}</div></div>`).join(''):'<div class="small muted">Brak wydatków w tym etapie.</div>'}
-    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
-  modal.classList.add('open');
-  lucide.createIcons();
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
 /* ---- ZADANIE ---- */
 function editTodo(id){
   const t=id?STATE.todos.find(x=>x.id===id):{text:'',stage_id:'',priority:'mid'};
-  sheet.innerHTML=`<h2>${id?'Edytuj zadanie':'Nowe zadanie'}</h2>
+  setSheet(`<h2>${id?'Edytuj zadanie':'Nowe zadanie'}</h2>
     <div class="field"><label>Treść</label><textarea id="f_text" rows="2" placeholder="co trzeba zrobić...">${esc(t.text)}</textarea></div>
     <div class="field"><label>Etap</label><select id="f_stage">${stageOptions(t.stage_id)}</select></div>
     <div class="field"><label>Priorytet</label><div class="seg" id="f_pri2">
@@ -1047,8 +1068,8 @@ function editTodo(id){
       <button data-v="low" class="${t.priority==='low'?'on':''}" onclick="segPick2(this)">Niski</button></div></div>
     <div class="sheet-actions">${id?`<button class="btn-del" onclick="delTodo('${id}')">Usuń</button>`:''}
       <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
-      <button class="btn-primary" id="saveBtn" onclick="saveTodo('${id||''}')">Zapisz</button></div>`;
-  sheet.dataset.pri=t.priority;modal.classList.add('open');
+      <button class="btn-primary" id="saveBtn" onclick="saveTodo('${id||''}')">Zapisz</button></div>`);
+  sheet.dataset.pri=t.priority;
 }
 function segPick2(b){document.querySelectorAll('#f_pri2 button').forEach(x=>x.classList.remove('on'));b.classList.add('on');sheet.dataset.pri=b.dataset.v;}
 async function saveTodo(id){
@@ -1073,7 +1094,7 @@ function editCost(id){
   const _today=new Date().toISOString().slice(0,10);
   const _yest=new Date(Date.now()-864e5).toISOString().slice(0,10);
   pendingFile=null;
-  sheet.innerHTML=`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
+  setSheet(`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
     <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
     <div class="field"><label>Etap</label><select id="c_stage">${stageOptions(c.stage_id)}</select></div>
@@ -1092,9 +1113,8 @@ function editCost(id){
       <div id="filePreview">${c.file_path?`<div class="filechip">${ic('paperclip',14)} obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
     <div class="sheet-actions">${id?`<button class="btn-del" onclick="delCost('${id}')">Usuń</button>`:''}
       <button class="btn-ghost" onclick="closeModal()">Anuluj</button>
-      <button class="btn-primary" id="saveBtn" onclick="saveCost('${id||''}')">Zapisz</button></div>`;
-  sheet.dataset.keepFile='1';modal.classList.add('open');
-  lucide.createIcons();
+      <button class="btn-primary" id="saveBtn" onclick="saveCost('${id||''}')">Zapisz</button></div>`);
+  sheet.dataset.keepFile='1';
 }
 function removeExisting(id){sheet.dataset.keepFile='0';document.getElementById('filePreview').innerHTML='<div class="small muted">Załącznik zostanie usunięty po zapisie.</div>';}
 function handleFile(input){
@@ -1164,7 +1184,7 @@ async function delCost(id){
 
 /* ---- USTAWIENIA ---- */
 function openSettings(){
-  sheet.innerHTML=`<h2>Ustawienia</h2>
+  setSheet(`<h2>Ustawienia</h2>
     <div class="field"><label>Nazwa domu / projektu</label><input id="s_house" value="${esc(STATE.house)}"></div>
     <div class="field"><label>Klucz Claude API (AI Asystent)</label>
       <input id="s_groq" type="password" value="${esc(localStorage.getItem('claude_key')||'')}" placeholder="sk-ant-...">
@@ -1175,8 +1195,7 @@ function openSettings(){
     <div class="card small" style="border-color:#5a2a24"><strong style="color:var(--ink)">Zmień bazę danych</strong><div class="muted" style="margin:5px 0 12px;line-height:1.5">Usuwa lokalnie zapisany adres i klucz Supabase. Dane w chmurze pozostają nienaruszone.</div>
       <button class="btn-del" style="width:100%;padding:11px" onclick="resetConfig()">Odłącz bazę danych</button></div>
     <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button>
-      <button class="btn-primary" onclick="saveSettings()">Zapisz</button></div>`;
-  modal.classList.add('open');
+      <button class="btn-primary" onclick="saveSettings()">Zapisz</button></div>`);
 }
 async function saveSettings(){
   const name=document.getElementById('s_house').value.trim()||'Klövervägen 12';
@@ -1581,8 +1600,8 @@ function initPullToRefresh(){
     if(!pulling||refreshing)return;
     const dy=e.touches[0].clientY-startY;
     const dx=Math.abs(e.touches[0].clientX-startX);
-    if(dy<0||dx>dy*.7)return;
-    if(dy>130&&!pullActive){pullActive=true;ptr.classList.add('show');}
+    if(dy<0||dx>dy*.4)return;
+    if(dy>200&&!pullActive){pullActive=true;ptr.classList.add('show');}
   },{passive:true});
   document.addEventListener('touchend',async()=>{
     if(!pullActive||refreshing)return;
