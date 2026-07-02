@@ -244,9 +244,12 @@
     border-radius:50%;background:radial-gradient(circle,rgba(224,120,48,.07),transparent 65%);pointer-events:none}
   .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
   .kpi-s{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 6px;
-    text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.2)}
+    text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.2);cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s}
+  .kpi-s:active{background:var(--panel-2);transform:scale(.93)}
   .kpi-s .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;line-height:1.2}
   .kpi-s .val{font-size:14px;font-weight:700;margin-top:4px;letter-spacing:-.2px;line-height:1.1}
+  .kpi-s .tap{font-size:7px;color:var(--line);margin-top:2px;letter-spacing:1px}
   /* ===== DASHBOARD TILES ===== */
   .dtile{background:var(--panel);border:1px solid var(--line);border-radius:18px;
     padding:14px 15px;margin-bottom:10px;-webkit-tap-highlight-color:transparent;cursor:pointer;transition:background .12s}
@@ -455,6 +458,19 @@ function progressOf(id){const t=STATE.todos.filter(x=>x.stage_id===id);if(!t.len
 function esc(s){return(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 function emptyBlock(t,s){return`<div class="empty"><i data-lucide="inbox"></i><div><strong>${t}</strong></div><div class="small" style="margin-top:6px">${s}</div></div>`;}
 function ic(name,size){return`<i data-lucide="${name}" style="width:${size||14}px;height:${size||14}px;flex-shrink:0;vertical-align:middle"></i>`;}
+function svgDonut(val,total,size,color){
+  const r=(size-10)/2,c=size/2,circ=2*Math.PI*r;
+  const pct=total?Math.min(val/total,1):0;
+  const dash=(pct*circ).toFixed(1),gap=(circ-pct*circ).toFixed(1);
+  const lbl=total?Math.round(pct*100)+'%':'–';
+  return`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+      stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${(circ/4).toFixed(1)}" stroke-linecap="round"/>
+    <text x="${c}" y="${c}" text-anchor="middle" dominant-baseline="middle"
+      fill="var(--ink)" font-size="${Math.round(size*.21)}px" font-weight="800">${lbl}</text>
+  </svg>`;
+}
 
 /* ============ NAWIGACJA ============ */
 const TAB_ORDER=['dash','stages','todo','costs'];
@@ -479,6 +495,162 @@ function render(dir){
     void v.offsetWidth;
     v.classList.add(dir==='right'?'slide-in-right':'slide-in-left');
   }
+}
+
+/* ============ KPI MODALE ============ */
+function openKpiStages(){
+  const tb=STATE.stages.reduce((a,s)=>a+Number(s.budget||0),0);
+  const ts=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
+  const pct=tb?Math.round(ts/tb*100):0;
+  const ord={high:0,mid:1,low:2};
+  const highs=STATE.stages.filter(s=>s.priority==='high').length;
+  const mids=STATE.stages.filter(s=>s.priority==='mid').length;
+  const lows=STATE.stages.filter(s=>s.priority==='low').length;
+  const ss=[...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]);
+  let rows='';
+  ss.forEach(s=>{
+    const sp=spentOn(s.id),bp=s.budget?Math.round(sp/s.budget*100):0;
+    rows+=`<div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span class="stage-dot" style="background:${s.color}"></span>
+        <span style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.name)}</span>
+        <span class="pill ${priClass(s.priority)}" style="padding:2px 7px;font-size:10px">${priLabel(s.priority)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="barwrap" style="flex:1;height:6px"><div class="bar ${bp>100?'over':'ok'}" style="width:${Math.min(bp,100)}%"></div></div>
+        <span style="font-size:11px;color:${bp>100?'var(--red)':'var(--muted)'};flex-shrink:0">${moneyShort(sp)}${s.budget?' / '+moneyShort(s.budget):''} kr</span>
+      </div>
+    </div>`;
+  });
+  sheet.innerHTML=`<h2>Etapy remontu</h2>
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px">
+      ${svgDonut(ts,tb,88,'var(--accent)')}
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Budżet wykorzystany</div>
+        <div style="font-size:26px;font-weight:800;letter-spacing:-.6px">${pct}%</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${moneyShort(ts)} / ${moneyShort(tb)} kr</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          ${highs?`<span class="pill p-high" style="padding:2px 8px;font-size:10px">W: ${highs}</span>`:''}
+          ${mids?`<span class="pill p-mid" style="padding:2px 8px;font-size:10px">Ś: ${mids}</span>`:''}
+          ${lows?`<span class="pill p-low" style="padding:2px 8px;font-size:10px">N: ${lows}</span>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:14px">${rows||'<div class="small muted">Brak etapów</div>'}</div>
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
+  modal.classList.add('open');lucide.createIcons();
+}
+
+function openKpiTodos(){
+  const done=STATE.todos.filter(t=>t.done).length;
+  const total=STATE.todos.length;
+  const open=total-done;
+  const ord={high:0,mid:1,low:2};
+  const highOpen=STATE.todos.filter(t=>!t.done&&t.priority==='high').length;
+  const midOpen=STATE.todos.filter(t=>!t.done&&t.priority==='mid').length;
+  const lowOpen=STATE.todos.filter(t=>!t.done&&t.priority==='low').length;
+  const topOpen=[...STATE.todos].filter(t=>!t.done).sort((a,b)=>ord[a.priority]-ord[b.priority]).slice(0,6);
+  let rows='';
+  topOpen.forEach(t=>{
+    const st=stageById(t.stage_id);
+    rows+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <span class="pill ${priClass(t.priority)}" style="padding:1px 6px;font-size:10px;flex-shrink:0">${priLabel(t.priority).charAt(0)}</span>
+      <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.text)}</span>
+      ${st?`<span class="stage-dot" style="background:${st.color};flex-shrink:0"></span>`:''}
+    </div>`;
+  });
+  if(open>6)rows+=`<div class="small muted" style="text-align:center;padding-top:8px">+${open-6} więcej</div>`;
+  sheet.innerHTML=`<h2>Zadania</h2>
+    <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px">
+      ${svgDonut(done,total,88,'var(--green)')}
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Ukończone</div>
+        <div style="font-size:26px;font-weight:800;letter-spacing:-.6px">${done} <span style="font-size:15px;color:var(--muted);font-weight:500">/ ${total}</span></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${open} pozostałych</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          ${highOpen?`<span class="pill p-high" style="padding:2px 8px;font-size:10px">Pilne: ${highOpen}</span>`:''}
+          ${midOpen?`<span class="pill p-mid" style="padding:2px 8px;font-size:10px">Śr: ${midOpen}</span>`:''}
+          ${lowOpen?`<span class="pill p-low" style="padding:2px 8px;font-size:10px">Niskie: ${lowOpen}</span>`:''}
+        </div>
+      </div>
+    </div>
+    ${rows?`<div style="border-top:1px solid var(--line);padding-top:14px">${rows}</div>`:'<div class="small muted" style="text-align:center;padding:16px 0">Wszystkie zadania ukończone 🎉</div>'}
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
+  modal.classList.add('open');
+}
+
+function openKpiWeek(){
+  const dayData=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*24*3600*1000);
+    const iso=d.toISOString().slice(0,10);
+    const lbl=d.toLocaleDateString('pl-PL',{weekday:'short'}).slice(0,2);
+    const amt=STATE.costs.filter(c=>c.date===iso).reduce((a,c)=>a+Number(c.amount||0),0);
+    dayData.push({iso,lbl,amt,today:i===0});
+  }
+  const weekTotal=dayData.reduce((a,d)=>a+d.amt,0);
+  const maxAmt=Math.max(1,...dayData.map(d=>d.amt));
+  let bars=`<div style="display:flex;align-items:flex-end;gap:5px;height:80px;margin-bottom:20px">`;
+  dayData.forEach(d=>{
+    const h=d.amt?Math.max(4,Math.round(d.amt/maxAmt*60)):2;
+    const bg=d.today?'var(--accent)':d.amt?'var(--panel-2)':'var(--line)';
+    const border=d.today?'var(--accent)':'var(--line)';
+    bars+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:80px;gap:4px">
+      <div style="width:100%;height:${h}px;background:${bg};border:1px solid ${border};border-radius:5px 5px 0 0"></div>
+      <div style="font-size:9px;color:${d.today?'var(--accent)':'var(--muted)'};font-weight:${d.today?700:400}">${d.lbl}</div>
+    </div>`;
+  });
+  bars+=`</div>`;
+  const isos=dayData.map(d=>d.iso);
+  const weekCosts=[...STATE.costs].filter(c=>isos.includes(c.date)).sort((a,b)=>Number(b.amount)-Number(a.amount)).slice(0,5);
+  let rows='';
+  weekCosts.forEach(c=>{
+    const st=stageById(c.stage_id);
+    rows+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.title)}</div>
+        <div style="font-size:11px;color:var(--muted)">${fmtDate(c.date)}${st?' · '+esc(st.name):''}</div>
+      </div>
+      <span style="font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0">${moneyShort(Number(c.amount))} kr</span>
+    </div>`;
+  });
+  sheet.innerHTML=`<h2>Ten tydzień</h2>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:16px">
+      <span style="font-size:28px;font-weight:800;letter-spacing:-.8px;color:${weekTotal>0?'var(--accent)':'var(--muted)'}">${weekTotal>0?moneyShort(weekTotal)+' kr':'–'}</span>
+      <span style="font-size:12px;color:var(--muted)">ostatnie 7 dni</span>
+    </div>
+    ${bars}
+    ${rows?`<div style="border-top:1px solid var(--line);padding-top:14px">${rows}</div>`:'<div class="small muted" style="text-align:center;padding:16px 0">Brak wydatków w tym tygodniu</div>'}
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
+  modal.classList.add('open');
+}
+
+function openKpiUrgent(){
+  const urgent=STATE.todos.filter(t=>!t.done&&t.priority==='high');
+  let rows='';
+  if(!urgent.length){
+    rows=`<div style="text-align:center;padding:28px 0">
+      <div style="font-size:36px;margin-bottom:10px">🎉</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">Brak pilnych zadań!</div>
+      <div class="small muted">Wszystkie priorytety wysokie ukończone</div>
+    </div>`;
+  }else{
+    urgent.forEach(t=>{
+      const st=stageById(t.stage_id);
+      rows+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div class="checkbox" onclick="toggleTodo('${t.id}');setTimeout(openKpiUrgent,120)"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600">${esc(t.text)}</div>
+          ${st?`<div style="font-size:11px;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:4px"><span class="stage-dot" style="background:${st.color}"></span>${esc(st.name)}</div>`:''}
+        </div>
+        <span class="pill p-high" style="padding:2px 7px;font-size:10px;flex-shrink:0">Pilne</span>
+      </div>`;
+    });
+  }
+  sheet.innerHTML=`<h2>Pilne zadania <span style="font-size:15px;font-weight:500;color:var(--muted)">(${urgent.length})</span></h2>
+    ${rows}
+    <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`;
+  modal.classList.add('open');
 }
 
 /* ============ WIDOKI ============ */
@@ -515,10 +687,10 @@ function renderDash(){
     <div class="row between" style="margin-top:6px"><span class="small muted">Wydano ${money(ts)}</span><span class="small muted">${pct}%</span></div>
   </div>
   <div class="kpi-row">
-    <div class="kpi-s"><div class="lbl">Etapy</div><div class="val">${STATE.stages.length}</div></div>
-    <div class="kpi-s"><div class="lbl">Zadania</div><div class="val">${done}/${STATE.todos.length}</div></div>
-    <div class="kpi-s"><div class="lbl">Ten tydz.</div><div class="val ${weekSpent>0?'accent':''}">${weekSpent>0?moneyShort(weekSpent)+' kr':'–'}</div></div>
-    <div class="kpi-s"><div class="lbl">Pilne</div><div class="val ${highOpen>0?'red':'green'}">${highOpen}</div></div>
+    <div class="kpi-s" onclick="openKpiStages()"><div class="lbl">Etapy</div><div class="val">${STATE.stages.length}</div><div class="tap">▸ szczeg.</div></div>
+    <div class="kpi-s" onclick="openKpiTodos()"><div class="lbl">Zadania</div><div class="val">${done}/${STATE.todos.length}</div><div class="tap">▸ szczeg.</div></div>
+    <div class="kpi-s" onclick="openKpiWeek()"><div class="lbl">Ten tydz.</div><div class="val ${weekSpent>0?'accent':''}">${weekSpent>0?moneyShort(weekSpent)+' kr':'–'}</div><div class="tap">▸ szczeg.</div></div>
+    <div class="kpi-s" onclick="openKpiUrgent()"><div class="lbl">Pilne</div><div class="val ${highOpen>0?'red':'green'}">${highOpen}</div><div class="tap">▸ szczeg.</div></div>
   </div>`;
 
   if(ts>0){
