@@ -996,7 +996,7 @@ const AI_TOOLS=[
   {name:'delete_cost',description:'Usuwa wydatek',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
 ];
 
-let aiDisp=[],aiHist=[],aiListening=false,aiSpeech=null;
+let aiDisp=[],aiHist=[],aiListening=false,aiSpeech=null,aiManualStop=false;
 
 function openAI(){
   if(!getAIKey()){showToast('Dodaj klucz Claude API w Ustawieniach','err');openSettings();return;}
@@ -1192,16 +1192,19 @@ async function sendAI(){
   }
   document.getElementById('ai-snd').disabled=false;
 }
-function toggleVoice(){aiListening?stopVoice():startVoice();}
+function toggleVoice(){
+  if(aiListening){aiManualStop=true;stopVoice();}
+  else startVoice();
+}
 function startVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showToast('Rozpoznawanie mowy niedostępne','err');return;}
-  aiSpeech=new SR();aiSpeech.lang='pl-PL';aiSpeech.continuous=false;aiSpeech.interimResults=true;
+  aiSpeech=new SR();aiSpeech.lang='pl-PL';aiSpeech.continuous=true;aiSpeech.interimResults=true;
   aiSpeech.onstart=()=>{
-    aiListening=true;
+    aiListening=true;aiManualStop=false;
     const btn=document.getElementById('ai-mic');btn.classList.add('on');
     btn.innerHTML='<i data-lucide="mic-off" style="width:18px;height:18px"></i>';lucide.createIcons();
-    document.getElementById('ai-txt').placeholder='Słucham…';
+    document.getElementById('ai-txt').placeholder='Słucham… (kliknij mikrofon aby zakończyć)';
   };
   aiSpeech.onresult=e=>{
     document.getElementById('ai-txt').value=Array.from(e.results).map(r=>r[0].transcript).join('');
@@ -1211,10 +1214,10 @@ function startVoice(){
     const btn=document.getElementById('ai-mic');btn.classList.remove('on');
     btn.innerHTML='<i data-lucide="mic" style="width:18px;height:18px"></i>';lucide.createIcons();
     document.getElementById('ai-txt').placeholder='Napisz lub naciśnij mikrofon…';
-    const t=document.getElementById('ai-txt').value.trim();if(t)sendAI();
+    if(aiManualStop){aiManualStop=false;const t=document.getElementById('ai-txt').value.trim();if(t)sendAI();}
   };
   aiSpeech.onerror=e=>{
-    aiListening=false;
+    aiListening=false;aiManualStop=false;
     const btn=document.getElementById('ai-mic');btn.classList.remove('on');
     btn.innerHTML='<i data-lucide="mic" style="width:18px;height:18px"></i>';lucide.createIcons();
     if(e.error!=='no-speech'&&e.error!=='aborted')showToast('Mikrofon: '+e.error,'err');
