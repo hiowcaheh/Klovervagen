@@ -922,8 +922,9 @@ async function loadAttachment(c){
     if(c.file_type==='image'){
       el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`;
     }else{
+      const parent=el.parentElement;
       el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">${ic('file-text',14)} ${esc(c.file_name||'dokument.pdf')}</div>`;
-      lucide.createIcons({rootElement:el.parentElement});
+      lucide.createIcons({rootElement:parent});
     }
   }catch(e){el.textContent='Nie udało się wczytać załącznika';}
 }
@@ -1123,8 +1124,9 @@ function editCost(id){
   pendingFile=null;
   setSheet(`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
-    <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0"></div>
-    <div class="field"><label>Etap</label><select id="c_stage">${stageOptions(c.stage_id)}</select></div>
+    <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0" oninput="checkBudgetWarn('${id||''}')">
+      <div id="budget-warn" style="display:none;margin-top:6px;background:rgba(208,80,80,.1);border:1px solid rgba(208,80,80,.3);border-radius:8px;padding:7px 11px;font-size:12px;color:#e07070"></div></div>
+    <div class="field"><label>Etap</label><select id="c_stage" onchange="checkBudgetWarn('${id||''}')">${stageOptions(c.stage_id)}</select></div>
     <div class="field"><label>Kategoria</label><select id="c_cat">
       <option value="materials" ${(c.category||'materials')==='materials'?'selected':''}>Materiały</option>
       <option value="labor" ${c.category==='labor'?'selected':''}>Robocizna</option>
@@ -1172,6 +1174,23 @@ function compressImage(file,cb){
     tryQuality(0.7);
   };img.src=e.target.result;};
   r.readAsDataURL(file);
+}
+function checkBudgetWarn(editId){
+  const warn=document.getElementById('budget-warn');if(!warn)return;
+  const amt=parseFloat(document.getElementById('c_amount')?.value)||0;
+  const stageId=document.getElementById('c_stage')?.value;
+  if(!stageId||!amt){warn.style.display='none';return;}
+  const s=stageById(stageId);
+  if(!s||!s.budget){warn.style.display='none';return;}
+  const already=STATE.costs.filter(c=>c.stage_id===stageId&&c.id!==editId).reduce((a,c)=>a+Number(c.amount||0),0);
+  const total=already+amt;
+  const over=total-s.budget;
+  if(over>0){
+    warn.style.display='block';
+    warn.textContent='⚠ Przekroczy budżet etapu "'+s.name+'" o '+money(over)+' (budżet: '+money(s.budget)+', już wydano: '+money(already)+')';
+  }else{
+    warn.style.display='none';
+  }
 }
 async function saveCost(id){
   const title=document.getElementById('c_title').value.trim();if(!title)return showToast('Podaj opis wydatku');
@@ -1570,6 +1589,8 @@ async function sendAI(){
         break;
       }
     }
+    // Keep last 20 messages to limit token cost
+    if(msgs.length>20)msgs=msgs.slice(msgs.length-20);
     aiHist=msgs;
     aiThink(false);
     aiDisp.push({r:'a',t:finalText||'Gotowe.'});
