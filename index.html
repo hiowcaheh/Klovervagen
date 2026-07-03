@@ -269,7 +269,7 @@
   .kpi-s:active{background:var(--panel-2);transform:scale(.93)}
   .kpi-s .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600;line-height:1.2}
   .kpi-s .val{font-size:14px;font-weight:700;margin-top:4px;letter-spacing:-.2px;line-height:1.1}
-  .kpi-s .tap{font-size:7px;color:var(--line);margin-top:2px;letter-spacing:1px}
+  .kpi-s .tap{font-size:9px;color:rgba(224,120,48,.5);margin-top:3px;letter-spacing:.3px}
   /* ===== DASHBOARD TILES ===== */
   .dtile{background:var(--panel);border:1px solid var(--line);border-radius:18px;
     padding:14px 15px;margin-bottom:10px;-webkit-tap-highlight-color:transparent;cursor:pointer;transition:background .12s}
@@ -772,10 +772,10 @@ function renderDash(){
     <div class="row between" style="margin-top:6px"><span class="small muted">Wydano ${money(ts)}</span><span class="small muted">${pct}%</span></div>
   </div>
   <div class="kpi-row">
-    <div class="kpi-s" onclick="openKpiStages()"><div class="lbl">Etapy</div><div class="val">${STATE.stages.length}</div><div class="tap">▸ szczeg.</div></div>
-    <div class="kpi-s" onclick="openKpiTodos()"><div class="lbl">Zadania</div><div class="val">${done}/${STATE.todos.length}</div><div class="tap">▸ szczeg.</div></div>
-    <div class="kpi-s" onclick="openKpiWeek()"><div class="lbl">Ten tydz.</div><div class="val ${weekSpent>0?'accent':''}">${weekSpent>0?moneyShort(weekSpent)+' kr':'–'}</div><div class="tap">▸ szczeg.</div></div>
-    <div class="kpi-s" onclick="openKpiUrgent()"><div class="lbl">Pilne</div><div class="val ${highOpen>0?'red':'green'}">${highOpen}</div><div class="tap">▸ szczeg.</div></div>
+    <div class="kpi-s" onclick="openKpiStages()"><div class="lbl">Etapy</div><div class="val">${STATE.stages.length}</div><div class="tap">+ szczegóły</div></div>
+    <div class="kpi-s" onclick="openKpiTodos()"><div class="lbl">Zadania</div><div class="val">${done}/${STATE.todos.length}</div><div class="tap">+ szczegóły</div></div>
+    <div class="kpi-s" onclick="openKpiWeek()"><div class="lbl">Ten tydz.</div><div class="val ${weekSpent>0?'accent':''}">${weekSpent>0?moneyShort(weekSpent)+' kr':'–'}</div><div class="tap">+ szczegóły</div></div>
+    <div class="kpi-s" onclick="openKpiUrgent()"><div class="lbl">Pilne</div><div class="val ${highOpen>0?'red':'green'}">${highOpen}</div><div class="tap">+ szczegóły</div></div>
   </div>`;
 
   if(ts>0){
