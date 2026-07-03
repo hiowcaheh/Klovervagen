@@ -919,13 +919,13 @@ async function loadAttachment(c){
   try{
     const{data,error}=await sb.storage.from('paragony').createSignedUrl(c.file_path,3600);
     if(error)throw error;
+    const parent=el.parentElement;
     if(c.file_type==='image'){
-      el.outerHTML=`<img class="thumb" src="${data.signedUrl}" onclick="event.stopPropagation();viewImg('${data.signedUrl}')" alt="paragon">`;
+      el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();viewImg('${data.signedUrl}')">${ic('image',14)} Zdjęcie / paragon — dotknij aby zobaczyć</div>`;
     }else{
-      const parent=el.parentElement;
       el.outerHTML=`<div class="filechip" onclick="event.stopPropagation();window.open('${data.signedUrl}','_blank')">${ic('file-text',14)} ${esc(c.file_name||'dokument.pdf')}</div>`;
-      lucide.createIcons({rootElement:parent});
     }
+    lucide.createIcons({rootElement:parent});
   }catch(e){el.textContent='Nie udało się wczytać załącznika';}
 }
 
