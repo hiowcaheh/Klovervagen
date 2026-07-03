@@ -739,9 +739,9 @@ function renderDash(){
   const weekAgo=new Date(Date.now()-7*24*3600*1000).toISOString().slice(0,10);
   const weekSpent=STATE.costs.filter(c=>c.date>=weekAgo).reduce((a,c)=>a+Number(c.amount||0),0);
   const ord={high:0,mid:1,low:2};
-  const CATS=['materials','labor','tools','other'];
-  const catLabels=['Materiały','Robocizna','Narzędzia','Inne'];
-  const catColors=['var(--accent)','var(--blue)','var(--green)','var(--muted)'];
+  const CATS=['materials','labor','tools','equipment','other'];
+  const catLabels=['Materiały','Robocizna','Narzędzia','Wyposażenie','Inne'];
+  const catColors=['var(--accent)','var(--blue)','var(--green)','#a78bfa','var(--muted)'];
   const catTots=CATS.map(cat=>STATE.costs.filter(c=>(c.category||'other')===cat).reduce((a,c)=>a+Number(c.amount||0),0));
   const maxCat=Math.max(1,...catTots);
   const ss=[...STATE.stages].sort((a,b)=>ord[a.priority]-ord[b.priority]);
@@ -873,7 +873,7 @@ function renderTodo(){
   return h;
 }
 function renderCosts(){
-  const CATS=['materials','labor','tools','other'];
+  const CATS=['materials','labor','tools','equipment','other'];
   let filtered=STATE.costs.filter(c=>(costFilter==='all'||c.stage_id===costFilter)&&(costCatFilter==='all'||(c.category||'other')===costCatFilter));
   if(costSearch)filtered=filtered.filter(c=>(c.title||'').toLowerCase().includes(costSearch.toLowerCase()));
   const tot=filtered.reduce((a,c)=>a+Number(c.amount||0),0);
@@ -920,7 +920,7 @@ async function loadAttachment(c){
 
 function setCostFilter(f){costFilter=f;render();}
 function setCostCatFilter(f){costCatFilter=f;render();}
-function catLabel(c){return c==='materials'?'Materiały':c==='labor'?'Robocizna':c==='tools'?'Narzędzia':'Inne';}
+function catLabel(c){return c==='materials'?'Materiały':c==='labor'?'Robocizna':c==='tools'?'Narzędzia':c==='equipment'?'Wyposażenie':'Inne';}
 function setTodoFilter(f){todoFilter=f;render();}
 function setTodoSearch(v){todoSearch=v;render();const el=document.getElementById('todo-search');if(el){el.focus();el.setSelectionRange(v.length,v.length);}}
 function setCostSearch(v){costSearch=v;render();const el=document.getElementById('cost-search');if(el){el.focus();el.setSelectionRange(v.length,v.length);}}
@@ -1119,6 +1119,7 @@ function editCost(id){
       <option value="materials" ${(c.category||'materials')==='materials'?'selected':''}>Materiały</option>
       <option value="labor" ${c.category==='labor'?'selected':''}>Robocizna</option>
       <option value="tools" ${c.category==='tools'?'selected':''}>Narzędzia</option>
+      <option value="equipment" ${c.category==='equipment'?'selected':''}>Wyposażenie</option>
       <option value="other" ${c.category==='other'?'selected':''}>Inne</option>
     </select></div>
     <div class="field"><label>Data</label><input id="c_date" type="date" value="${c.date}">
@@ -1362,15 +1363,15 @@ function showToast(m,type=''){
 /* ============ AI ASYSTENT ============ */
 function getAIKey(){return localStorage.getItem('claude_key')||'';}
 const AI_TOOLS=[
-  {name:'query_data',description:'Pobiera i filtruje dane (stages/todos/costs). Uzywaj do odpowiedzi na pytania o dane.',input_schema:{type:'object',properties:{table:{type:'string',enum:['stages','todos','costs']},stage_id:{type:'string'},category:{type:'string',enum:['materials','labor','tools','other']},done:{type:'boolean'},date_from:{type:'string',description:'YYYY-MM-DD'},date_to:{type:'string',description:'YYYY-MM-DD'}},required:['table']}},
+  {name:'query_data',description:'Pobiera i filtruje dane (stages/todos/costs). Uzywaj do odpowiedzi na pytania o dane.',input_schema:{type:'object',properties:{table:{type:'string',enum:['stages','todos','costs']},stage_id:{type:'string'},category:{type:'string',enum:['materials','labor','tools','equipment','other']},done:{type:'boolean'},date_from:{type:'string',description:'YYYY-MM-DD'},date_to:{type:'string',description:'YYYY-MM-DD'}},required:['table']}},
   {name:'add_stage',description:'Dodaje nowy etap remontu',input_schema:{type:'object',properties:{name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number',description:'Budzet w SEK'},note:{type:'string'}},required:['name']}},
   {name:'edit_stage',description:'Edytuje istniejacy etap',input_schema:{type:'object',properties:{id:{type:'string'},name:{type:'string'},priority:{type:'string',enum:['high','mid','low']},budget:{type:'number'},note:{type:'string'}},required:['id']}},
   {name:'delete_stage',description:'Usuwa etap remontu',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
   {name:'add_todo',description:'Dodaje nowe zadanie',input_schema:{type:'object',properties:{text:{type:'string'},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},priority:{type:'string',enum:['high','mid','low']}},required:['text']}},
   {name:'edit_todo',description:'Edytuje zadanie lub zmienia status ukonczenia (done:true/false)',input_schema:{type:'object',properties:{id:{type:'string'},text:{type:'string'},stage_id:{type:'string'},priority:{type:'string',enum:['high','mid','low']},done:{type:'boolean'}},required:['id']}},
   {name:'delete_todo',description:'Usuwa zadanie',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
-  {name:'add_cost',description:'Dodaje nowy wydatek',input_schema:{type:'object',properties:{title:{type:'string',description:'Opis wydatku'},amount:{type:'number',description:'Kwota w SEK'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},date:{type:'string',description:'YYYY-MM-DD, domyslnie dzisiaj'},note:{type:'string'}},required:['title','amount']}},
-  {name:'edit_cost',description:'Edytuje wydatek',input_schema:{type:'object',properties:{id:{type:'string'},title:{type:'string'},amount:{type:'number'},category:{type:'string',enum:['materials','labor','tools','other']},stage_id:{type:'string'},date:{type:'string'},note:{type:'string'}},required:['id']}},
+  {name:'add_cost',description:'Dodaje nowy wydatek',input_schema:{type:'object',properties:{title:{type:'string',description:'Opis wydatku'},amount:{type:'number',description:'Kwota w SEK'},category:{type:'string',enum:['materials','labor','tools','equipment','other']},stage_id:{type:'string',description:'ID etapu (opcjonalne)'},date:{type:'string',description:'YYYY-MM-DD, domyslnie dzisiaj'},note:{type:'string'}},required:['title','amount']}},
+  {name:'edit_cost',description:'Edytuje wydatek',input_schema:{type:'object',properties:{id:{type:'string'},title:{type:'string'},amount:{type:'number'},category:{type:'string',enum:['materials','labor','tools','equipment','other']},stage_id:{type:'string'},date:{type:'string'},note:{type:'string'}},required:['id']}},
   {name:'delete_cost',description:'Usuwa wydatek',input_schema:{type:'object',properties:{id:{type:'string'}},required:['id']}},
 ];
 
@@ -1429,7 +1430,7 @@ function aiSysPrompt(){
     'Stan: '+STATE.stages.length+' etapow, '+STATE.todos.length+' zadan ('+done+' ukonczonych), laczne wydatki: '+tc+' kr\n\n'+
     'Aktualne etapy:\n'+
     (STATE.stages.map(s=>'- "'+s.name+'" [ID:'+s.id+'] priorytet:'+s.priority+' budzet:'+s.budget+'kr').join('\n')||'(brak etapow)')+'\n\n'+
-    'Kategorie wydatkow: materials=Materialy, labor=Robocizna, tools=Narzedzia, other=Inne\n'+
+    'Kategorie wydatkow: materials=Materialy, labor=Robocizna, tools=Narzedzia, equipment=Wyposazenie, other=Inne\n'+
     'Priorytety: high=Wysoki, mid=Sredni, low=Niski\n\n'+
     'ZASADY:\n'+
     '1. Gdy cos niejednoznaczne (np. kilka etapow pasuje) - zapytaj i podaj opcje.\n'+
