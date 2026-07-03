@@ -173,14 +173,19 @@
   .slide-in-left{animation:slideInLeft .48s cubic-bezier(.22,.68,0,1.2) both}
 
   /* ===== AI ASYSTENT ===== */
-  .ai-tab-btn{background:none;border:none;color:#4ade80;display:flex;flex-direction:column;
-    align-items:center;gap:3px;padding:6px 4px;border-radius:12px;cursor:pointer;font-size:10px;
-    letter-spacing:.3px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:color .15s;position:relative}
-  .ai-tab-btn:active{color:#86efac}
-  .ai-tab-btn .ic{line-height:0;transition:transform .2s}
-  .ai-tab-btn:active .ic{transform:scale(1.1)}
-  .ai-tab-btn::after{content:'';display:block;height:2px;width:24px;background:#4ade80;
-    border-radius:2px;margin:1px auto 0}
+  .ai-tab-btn{background:none;border:none;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:2px;border-radius:50%;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:transform .15s}
+  .ai-tab-btn:active{transform:scale(.88)}
+  .ai-orb{width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 38% 30%,#1e5c32 0%,#0d2e18 50%,#05130b 100%);
+    display:grid;place-items:center;
+    border:1px solid rgba(74,222,128,.5);
+    box-shadow:0 0 0 3px rgba(74,222,128,.07),0 0 16px rgba(74,222,128,.4),0 3px 20px rgba(22,163,74,.5),inset 0 1.5px 0 rgba(255,255,255,.14);
+    animation:orbGlow 3.5s ease-in-out infinite}
+  @keyframes orbGlow{
+    0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,.07),0 0 12px rgba(74,222,128,.34),0 3px 16px rgba(22,163,74,.44),inset 0 1.5px 0 rgba(255,255,255,.12)}
+    50%{box-shadow:0 0 0 6px rgba(74,222,128,.12),0 0 24px rgba(74,222,128,.55),0 3px 28px rgba(22,163,74,.7),inset 0 1.5px 0 rgba(255,255,255,.18)}}
   #ai-ov{position:fixed;inset:0;z-index:55;background:var(--bg);
     display:flex;flex-direction:column;
     transform:translateY(100%);transition:transform .35s cubic-bezier(.22,.68,0,1.1)}
@@ -322,8 +327,7 @@
     <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
     <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
     <button class="ai-tab-btn" onclick="openAI()">
-      <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.5"/><circle cx="15" cy="9" r="3.5"/><circle cx="9" cy="15" r="3.5"/><circle cx="15" cy="15" r="3.5"/><line x1="12" y1="14" x2="12" y2="22"/></svg></span>
-      AI
+      <div class="ai-orb"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.5"/><circle cx="15" cy="9" r="3.5"/><circle cx="9" cy="15" r="3.5"/><circle cx="15" cy="15" r="3.5"/><line x1="12" y1="14" x2="12" y2="22"/></svg></div>
     </button>
     <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
     <button data-tab="costs" onclick="go('costs')"><span class="ic"><i data-lucide="receipt"></i></span>Wydatki</button>
@@ -608,34 +612,48 @@ function openKpiTodos(){
     <div class="sheet-actions"><button class="btn-ghost" onclick="closeModal()">Zamknij</button></div>`);
 }
 
-let _weekKpiView='days',_weekKpiSel=null;
-function switchWeekView(v){_weekKpiView=v;_weekKpiSel=null;openKpiWeek();}
+function isoWeek(d){const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-(t.getDay()+6)%7);const w=new Date(t.getFullYear(),0,4);return 1+Math.round(((t-w)/86400000-3+(w.getDay()+6)%7)/7);}
+let _weekKpiView='days',_weekKpiSel=null,_weekKpiOffset=0;
+function switchWeekView(v){_weekKpiView=v;_weekKpiSel=null;_weekKpiOffset=0;openKpiWeek();}
 function weekBarClick(key,hasAmt){if(!hasAmt)return;_weekKpiSel=_weekKpiSel===key?null:key;openKpiWeek();}
+function shiftWeekKpi(delta){_weekKpiOffset=Math.max(0,_weekKpiOffset+delta);_weekKpiSel=null;openKpiWeek();}
 function openKpiWeek(){
+  const off=_weekKpiOffset;
   let data;
   if(_weekKpiView==='weeks'){
     data=Array.from({length:4},(_,i)=>{
-      const endMs=Date.now()-(3-i)*7*86400000,startMs=endMs-6*86400000;
+      const endMs=Date.now()-(off*4+(3-i))*7*86400000,startMs=endMs-6*86400000;
       const start=new Date(startMs).toISOString().slice(0,10),end=new Date(endMs).toISOString().slice(0,10);
-      return{key:start,start,end,lbl:i===3?'ten':'-'+(4-i)+'t',amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===3};
+      return{key:start,start,end,lbl:'v'+isoWeek(new Date(endMs)),amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:off===0&&i===3};
     });
   }else if(_weekKpiView==='months'){
     data=Array.from({length:6},(_,i)=>{
-      const ref=new Date();ref.setDate(1);ref.setMonth(ref.getMonth()-(5-i));
+      const ref=new Date();ref.setDate(1);ref.setMonth(ref.getMonth()-(off*6+(5-i)));
       const y=ref.getFullYear(),m=ref.getMonth();
       const start=`${y}-${String(m+1).padStart(2,'0')}-01`;
       const end=`${y}-${String(m+1).padStart(2,'0')}-${String(new Date(y,m+1,0).getDate()).padStart(2,'0')}`;
-      return{key:start,start,end,lbl:ref.toLocaleDateString('pl-PL',{month:'short'}).replace('.',''),amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===5};
+      return{key:start,start,end,lbl:ref.toLocaleDateString('pl-PL',{month:'short'}).replace('.',''),amt:STATE.costs.filter(c=>c.date>=start&&c.date<=end).reduce((a,c)=>a+Number(c.amount||0),0),isNow:off===0&&i===5};
     });
   }else{
     data=Array.from({length:7},(_,i)=>{
-      const d=new Date(Date.now()-(6-i)*86400000),iso=d.toISOString().slice(0,10);
-      return{key:iso,start:iso,end:iso,lbl:d.toLocaleDateString('pl-PL',{weekday:'short'}).slice(0,2),amt:STATE.costs.filter(c=>c.date===iso).reduce((a,c)=>a+Number(c.amount||0),0),isNow:i===6};
+      const d=new Date(Date.now()-(off*7+(6-i))*86400000),iso=d.toISOString().slice(0,10);
+      return{key:iso,start:iso,end:iso,lbl:d.toLocaleDateString('pl-PL',{weekday:'short'}).slice(0,2),amt:STATE.costs.filter(c=>c.date===iso).reduce((a,c)=>a+Number(c.amount||0),0),isNow:off===0&&i===6};
     });
   }
   const total=data.reduce((a,d)=>a+d.amt,0);
   const maxAmt=Math.max(1,...data.map(d=>d.amt));
   const selKey=_weekKpiSel;
+  const navBtn=(dir,lbl2)=>{
+    const disabled=dir<0&&off===0;
+    return`<button onclick="${disabled?'':('shiftWeekKpi('+dir+')')}" style="width:32px;height:32px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);color:${disabled?'var(--line)':'var(--ink)'};font-size:16px;display:grid;place-items:center;cursor:${disabled?'default':'pointer'};-webkit-tap-highlight-color:transparent;flex-shrink:0">${lbl2}</button>`;
+  };
+  const navRow=`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+    <div style="display:flex;align-items:baseline;gap:6px;min-width:0;flex:1;overflow:hidden">
+      <span style="font-size:24px;font-weight:800;letter-spacing:-.7px;color:${total>0?'var(--accent)':'var(--muted)'};font-variant-numeric:tabular-nums;flex-shrink:0">${total>0?money(total):'–'}</span>
+      <span style="font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fmtDate(data[0].start)} – ${fmtDate(data[data.length-1].end)}</span>
+    </div>
+    <div style="display:flex;gap:4px">${navBtn(1,'‹')}${navBtn(-1,'›')}</div>
+  </div>`;
   const tog=['days','weeks','months'].map(v=>`<button style="flex:1;padding:8px 0;border-radius:10px;font-size:12px;font-weight:600;background:${_weekKpiView===v?'var(--accent)':'var(--panel-2)'};color:${_weekKpiView===v?'#1a0f06':'var(--muted)'};border:1px solid ${_weekKpiView===v?'transparent':'var(--line)'};-webkit-tap-highlight-color:transparent" onclick="switchWeekView('${v}')">${v==='days'?'7 dni':v==='weeks'?'Tygodnie':'Miesiące'}</button>`).join('');
   let bars='<div style="display:flex;align-items:flex-end;gap:4px;height:94px;margin:14px 0 4px">';
   data.forEach(d=>{
@@ -671,12 +689,8 @@ function openKpiWeek(){
       <span style="font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0;font-variant-numeric:tabular-nums">${money(Number(c.amount))}</span>
     </div>`;
   });
-  const viewLabel={days:'ostatnie 7 dni',weeks:'ostatnie 4 tygodnie',months:'ostatnie 6 miesięcy'}[_weekKpiView];
   setSheet(`<h2 style="margin-bottom:4px">Wydatki w czasie</h2>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
-      <span style="font-size:26px;font-weight:800;letter-spacing:-.7px;color:${total>0?'var(--accent)':'var(--muted)'};font-variant-numeric:tabular-nums">${total>0?money(total):'–'}</span>
-      <span style="font-size:12px;color:var(--muted)">${viewLabel}</span>
-    </div>
+    ${navRow}
     <div style="display:flex;gap:6px;margin-bottom:2px">${tog}</div>
     ${bars}
     ${selInfo}
