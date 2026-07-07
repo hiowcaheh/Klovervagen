@@ -1123,6 +1123,14 @@ function editCost(id){
   const _yest=new Date(Date.now()-864e5).toISOString().slice(0,10);
   pendingFile=null;
   setSheet(`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
+    <label id="scan-lbl" style="display:flex;align-items:center;gap:10px;background:rgba(74,222,128,.07);border:1.5px dashed rgba(74,222,128,.3);border-radius:12px;padding:12px 14px;cursor:pointer;margin-bottom:16px;transition:background .15s,border-color .15s">
+      <span id="scan-icon" style="color:var(--green);flex-shrink:0">${ic('scan-line',18)}</span>
+      <div id="scan-text" style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--green)">Skanuj paragon / fakturę</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">Claude odczyta i wypełni formularz — Ty sprawdzasz i zapisujesz</div>
+      </div>
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanReceipt(this,'${id||''}')">
+    </label>
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
     <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0" oninput="checkBudgetWarn('${id||''}')">
       <div id="budget-warn" style="display:none;margin-top:6px;background:rgba(208,80,80,.1);border:1px solid rgba(208,80,80,.3);border-radius:8px;padding:7px 11px;font-size:12px;color:#e07070"></div></div>
@@ -1190,6 +1198,71 @@ function checkBudgetWarn(editId){
     warn.textContent='⚠ Przekroczy budżet etapu "'+s.name+'" o '+money(over)+' (budżet: '+money(s.budget)+', już wydano: '+money(already)+')';
   }else{
     warn.style.display='none';
+  }
+}
+function imageToBase64ForScan(file){
+  return new Promise(resolve=>{
+    const img=new Image(),r=new FileReader();
+    r.onload=e=>{img.onload=()=>{
+      const max=1200;let{width,height}=img;
+      if(width>max||height>max){if(width>height){height=height*max/width;width=max;}else{width=width*max/height;height=max;}}
+      const cv=document.createElement('canvas');cv.width=width;cv.height=height;
+      cv.getContext('2d').drawImage(img,0,0,width,height);
+      cv.toBlob(b=>{
+        const r2=new FileReader();r2.onload=e2=>resolve(e2.target.result.split(',')[1]);r2.readAsDataURL(b);
+      },'image/jpeg',0.85);
+    };img.src=e.target.result;};
+    r.readAsDataURL(file);
+  });
+}
+async function scanReceipt(input,editId){
+  const file=input.files[0];if(!file)return;
+  const lbl=document.getElementById('scan-lbl');
+  const txt=document.getElementById('scan-text');
+  if(!lbl||!txt)return;
+  txt.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--green)">Analizuję paragon…</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Proszę czekać</div>';
+  lbl.style.pointerEvents='none';lbl.style.opacity='0.7';
+  try{
+    const apiKey=localStorage.getItem('claude_key')||'';
+    if(!apiKey)throw new Error('Brak klucza API Claude — dodaj go w Ustawieniach');
+    const b64=await imageToBase64ForScan(file);
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'x-api-key':apiKey,'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true','content-type':'application/json'
+    },body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:256,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+        {type:'text',text:'Odczytaj ten paragon lub fakturę. Zwróć TYLKO JSON w formacie: {"title":"krótki opis co kupiono (po polsku, max 60 znaków)","amount":"kwota liczbowo bez waluty","date":"YYYY-MM-DD"}. Jeśli nie możesz odczytać jakiegoś pola zostaw pusty string. Nic poza JSON.'}
+      ]}]})});
+    if(!res.ok)throw new Error('Błąd API Claude: '+res.status);
+    const data=await res.json();
+    const text=(data.content?.[0]?.text||'').trim();
+    const s=text.indexOf('{'),e2=text.lastIndexOf('}');
+    if(s<0||e2<0)throw new Error('Nie udało się odczytać danych z paragonu');
+    const p=JSON.parse(text.slice(s,e2+1));
+    if(p.title){const el=document.getElementById('c_title');if(el)el.value=p.title;}
+    if(p.amount){
+      const amt=parseFloat(String(p.amount).replace(/\s/g,'').replace(',','.'));
+      if(!isNaN(amt)){const el=document.getElementById('c_amount');if(el){el.value=amt;checkBudgetWarn(editId);}}
+    }
+    if(p.date&&/^\d{4}-\d{2}-\d{2}$/.test(p.date)){const el=document.getElementById('c_date');if(el)el.value=p.date;}
+    compressImage(file,(blob,url)=>{
+      pendingFile={blob,type:'image',name:file.name.replace(/\.\w+$/,'.jpg')};
+      sheet.dataset.keepFile='0';
+      const fp=document.getElementById('filePreview');
+      if(fp){fp.innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">${ic('image',14)} ${esc(file.name)} — zeskanowany<span class="x" onclick="clearFile()">✕</span></div>`;
+        lucide.createIcons({rootElement:fp});}
+    });
+    lbl.style.background='rgba(74,222,128,.14)';lbl.style.borderColor='rgba(74,222,128,.6)';lbl.style.pointerEvents='none';
+    const summary=[(p.title||'').slice(0,40),(p.amount?p.amount+' SEK':''),p.date].filter(Boolean).join(' · ');
+    txt.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--green)">Gotowe! Sprawdź i popraw dane</div><div style="font-size:11px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(summary)}</div>`;
+    document.getElementById('scan-icon').innerHTML='<i data-lucide="check-circle" style="width:18px;height:18px;color:var(--green)"></i>';
+    lucide.createIcons({rootElement:document.getElementById('scan-icon')});
+  }catch(err){
+    lbl.style.pointerEvents='';lbl.style.opacity='';
+    txt.innerHTML=`<div style="font-size:13px;font-weight:700;color:#e07070">Błąd skanowania</div><div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(err.message)}</div>`;
+    document.getElementById('scan-icon').innerHTML='<i data-lucide="x-circle" style="width:18px;height:18px;color:#e07070"></i>';
+    lucide.createIcons({rootElement:document.getElementById('scan-icon')});
   }
 }
 async function saveCost(id){
