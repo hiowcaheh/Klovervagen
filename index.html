@@ -1140,7 +1140,7 @@ function editCost(id){
     <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
       <label id="scan-lbl" class="upload" style="border-color:rgba(74,222,128,.4);color:var(--green);margin-bottom:8px;transition:background .15s,border-color .15s">
         <span id="scan-icon">${ic('scan-line',16)}</span>
-        <span id="scan-text">Skanuj paragon — Claude wypełni formularz</span>
+        <span id="scan-text">Skanuj paragon lub fakturę</span>
         <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanReceipt(this,'${id||''}')">
       </label>
       <label class="upload"><i data-lucide="upload" style="width:16px;height:16px"></i>Wybierz zdjęcie lub zrób nowe
