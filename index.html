@@ -750,21 +750,32 @@ function addShopItem(){
   arr.push({id:Date.now().toString(36),text,done:false});
   saveShopList(arr);inp.value='';
   document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+  showToast('Dodano: '+text);
 }
 function toggleShopItem(id){
   const arr=getShopList().map(i=>i.id===id?{...i,done:!i.done}:i);
   saveShopList(arr);
+  const item=arr.find(i=>i.id===id);
   document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+  if(item)showToast(item.done?'Kupione: '+item.text:'Przywrócono: '+item.text, item.done?'ok':'');
+  const allDone=arr.length>0&&arr.every(i=>i.done);
+  if(allDone)showToast('Wszystko kupione! 🛒');
 }
 function removeShopItem(id){
-  const arr=getShopList().filter(i=>i.id!==id);
+  const all=getShopList();
+  const item=all.find(i=>i.id===id);
+  const arr=all.filter(i=>i.id!==id);
   saveShopList(arr);
   document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+  if(item)showToast('Usunięto: '+item.text,'err');
 }
 function clearShopDone(){
-  const arr=getShopList().filter(i=>!i.done);
+  const all=getShopList();
+  const count=all.filter(i=>i.done).length;
+  const arr=all.filter(i=>!i.done);
   saveShopList(arr);
   document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+  if(count)showToast('Usunięto '+count+' kupionych pozycji');
 }
 function shopItemsHtml(arr){
   if(!arr.length)return`<div style="font-size:13px;color:var(--muted);padding:6px 0 4px">Lista pusta — dodaj co trzeba kupić</div>`;
