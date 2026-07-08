@@ -764,12 +764,14 @@ function addShopItem(){
     inp.focus();
     const nav=document.querySelector('nav.tabs');
     const navH=nav?nav.offsetHeight:70;
+    const vv=window.visualViewport;
+    const vh=vv?vv.height:window.innerHeight;
     const rect=inp.getBoundingClientRect();
-    const clearance=navH+16;
-    if(rect.bottom>window.innerHeight-clearance){
-      window.scrollBy({top:rect.bottom-(window.innerHeight-clearance),behavior:'smooth'});
+    const gap=navH+24;
+    if(rect.bottom>vh-gap){
+      window.scrollBy({top:rect.bottom-(vh-gap),behavior:'smooth'});
     }
-  },80);
+  },350);
 }
 function toggleShopItem(id){
   const arr=getShopList().map(i=>i.id===id?{...i,done:!i.done}:i);
