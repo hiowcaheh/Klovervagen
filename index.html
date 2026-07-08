@@ -760,6 +760,7 @@ function addShopItem(){
   saveShopList(arr);inp.value='';
   _refreshShop(arr);
   showToast('Dodano: '+text);
+  setTimeout(()=>{inp.scrollIntoView({behavior:'smooth',block:'end'});inp.focus();},80);
 }
 function toggleShopItem(id){
   const arr=getShopList().map(i=>i.id===id?{...i,done:!i.done}:i);
