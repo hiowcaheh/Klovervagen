@@ -1123,14 +1123,6 @@ function editCost(id){
   const _yest=new Date(Date.now()-864e5).toISOString().slice(0,10);
   pendingFile=null;
   setSheet(`<h2>${id?'Edytuj wydatek':'Nowy wydatek'}</h2>
-    <label id="scan-lbl" style="display:flex;align-items:center;gap:10px;background:rgba(74,222,128,.07);border:1.5px dashed rgba(74,222,128,.3);border-radius:12px;padding:12px 14px;cursor:pointer;margin-bottom:16px;transition:background .15s,border-color .15s">
-      <span id="scan-icon" style="color:var(--green);flex-shrink:0">${ic('scan-line',18)}</span>
-      <div id="scan-text" style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:700;color:var(--green)">Skanuj paragon / fakturę</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px">Claude odczyta i wypełni formularz — Ty sprawdzasz i zapisujesz</div>
-      </div>
-      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanReceipt(this,'${id||''}')">
-    </label>
     <div class="field"><label>Opis / co kupiono</label><input id="c_title" value="${esc(c.title)}" placeholder="np. Blachodachówka 60m²"></div>
     <div class="field"><label>Kwota (SEK)</label><input id="c_amount" type="number" inputmode="decimal" value="${c.amount}" placeholder="0" oninput="checkBudgetWarn('${id||''}')">
       <div id="budget-warn" style="display:none;margin-top:6px;background:rgba(208,80,80,.1);border:1px solid rgba(208,80,80,.3);border-radius:8px;padding:7px 11px;font-size:12px;color:#e07070"></div></div>
@@ -1146,6 +1138,11 @@ function editCost(id){
       <div class="qdates"><button type="button" onclick="document.getElementById('c_date').value='${_today}'">Dziś</button><button type="button" onclick="document.getElementById('c_date').value='${_yest}'">Wczoraj</button></div></div>
     <div class="field"><label>Notatka</label><textarea id="c_note" rows="2" placeholder="dostawca, gwarancja, uwagi...">${esc(c.note||'')}</textarea></div>
     <div class="field"><label>Paragon / faktura (zdjęcie lub PDF)</label>
+      <label id="scan-lbl" class="upload" style="border-color:rgba(74,222,128,.4);color:var(--green);margin-bottom:8px;transition:background .15s,border-color .15s">
+        <span id="scan-icon">${ic('scan-line',16)}</span>
+        <span id="scan-text">Skanuj paragon — Claude wypełni formularz</span>
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanReceipt(this,'${id||''}')">
+      </label>
       <label class="upload"><i data-lucide="upload" style="width:16px;height:16px"></i>Wybierz zdjęcie lub zrób nowe
         <input type="file" accept="image/*,application/pdf" style="display:none" onchange="handleFile(this)"></label>
       <div id="filePreview">${c.file_path?`<div class="filechip">${ic('paperclip',14)} obecny załącznik (zostanie zachowany)<span class="x" onclick="removeExisting('${id}')">✕</span></div>`:''}</div></div>
@@ -1220,7 +1217,7 @@ async function scanReceipt(input,editId){
   const lbl=document.getElementById('scan-lbl');
   const txt=document.getElementById('scan-text');
   if(!lbl||!txt)return;
-  txt.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--green)">Analizuję paragon…</div><div style="font-size:11px;color:var(--muted);margin-top:1px">Proszę czekać</div>';
+  txt.textContent='Analizuję paragon…';
   lbl.style.pointerEvents='none';lbl.style.opacity='0.7';
   try{
     const apiKey=localStorage.getItem('claude_key')||'';
@@ -1253,16 +1250,16 @@ async function scanReceipt(input,editId){
       if(fp){fp.innerHTML=`<img class="thumb" src="${url}" alt=""><div class="filechip">${ic('image',14)} ${esc(file.name)} — zeskanowany<span class="x" onclick="clearFile()">✕</span></div>`;
         lucide.createIcons({rootElement:fp});}
     });
-    lbl.style.background='rgba(74,222,128,.14)';lbl.style.borderColor='rgba(74,222,128,.6)';lbl.style.pointerEvents='none';
-    const summary=[(p.title||'').slice(0,40),(p.amount?p.amount+' SEK':''),p.date].filter(Boolean).join(' · ');
-    txt.innerHTML=`<div style="font-size:13px;font-weight:700;color:var(--green)">Gotowe! Sprawdź i popraw dane</div><div style="font-size:11px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(summary)}</div>`;
-    document.getElementById('scan-icon').innerHTML='<i data-lucide="check-circle" style="width:18px;height:18px;color:var(--green)"></i>';
-    lucide.createIcons({rootElement:document.getElementById('scan-icon')});
+    lbl.style.background='rgba(74,222,128,.12)';lbl.style.borderColor='rgba(74,222,128,.6)';lbl.style.pointerEvents='none';lbl.style.opacity='';
+    txt.textContent='Gotowe! Sprawdź i popraw dane w formularzu';
+    const si=document.getElementById('scan-icon');
+    if(si){si.innerHTML='<i data-lucide="check-circle" style="width:16px;height:16px"></i>';lucide.createIcons({rootElement:si});}
   }catch(err){
     lbl.style.pointerEvents='';lbl.style.opacity='';
-    txt.innerHTML=`<div style="font-size:13px;font-weight:700;color:#e07070">Błąd skanowania</div><div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(err.message)}</div>`;
-    document.getElementById('scan-icon').innerHTML='<i data-lucide="x-circle" style="width:18px;height:18px;color:#e07070"></i>';
-    lucide.createIcons({rootElement:document.getElementById('scan-icon')});
+    txt.textContent='Błąd: '+err.message;
+    lbl.style.color='#e07070';lbl.style.borderColor='rgba(208,80,80,.4)';
+    const si=document.getElementById('scan-icon');
+    if(si){si.innerHTML='<i data-lucide="x-circle" style="width:16px;height:16px;color:#e07070"></i>';lucide.createIcons({rootElement:si});}
   }
 }
 async function saveCost(id){
