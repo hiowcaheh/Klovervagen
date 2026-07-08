@@ -740,6 +740,65 @@ function openKpiUrgent(){
 }
 
 /* ============ WIDOKI ============ */
+/* ---- LISTA ZAKUPÓW ---- */
+function getShopList(){try{return JSON.parse(localStorage.getItem('shop_list')||'[]');}catch(e){return[];}}
+function saveShopList(arr){localStorage.setItem('shop_list',JSON.stringify(arr));}
+function addShopItem(){
+  const inp=document.getElementById('shop-inp');if(!inp)return;
+  const text=inp.value.trim();if(!text)return;
+  const arr=getShopList();
+  arr.push({id:Date.now().toString(36),text,done:false});
+  saveShopList(arr);inp.value='';
+  document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+}
+function toggleShopItem(id){
+  const arr=getShopList().map(i=>i.id===id?{...i,done:!i.done}:i);
+  saveShopList(arr);
+  document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+}
+function removeShopItem(id){
+  const arr=getShopList().filter(i=>i.id!==id);
+  saveShopList(arr);
+  document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+}
+function clearShopDone(){
+  const arr=getShopList().filter(i=>!i.done);
+  saveShopList(arr);
+  document.getElementById('shop-list-inner').innerHTML=shopItemsHtml(arr);
+}
+function shopItemsHtml(arr){
+  if(!arr.length)return`<div style="font-size:12px;color:var(--muted);padding:4px 0 2px">Lista pusta — dodaj co trzeba kupić</div>`;
+  const done=arr.filter(i=>i.done).length;
+  return arr.map(i=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)">
+    <input type="checkbox" ${i.done?'checked':''} onchange="toggleShopItem('${i.id}')"
+      style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;cursor:pointer">
+    <span style="flex:1;font-size:14px;${i.done?'text-decoration:line-through;color:var(--muted)':''}">${esc(i.text)}</span>
+    <button onclick="removeShopItem('${i.id}')" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px;line-height:1">✕</button>
+  </div>`).join('')
+  +(done?`<div style="text-align:right;padding-top:6px"><button onclick="clearShopDone()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline">Usuń kupione (${done})</button></div>`:'');
+}
+function renderShoppingWidget(){
+  const arr=getShopList();
+  const done=arr.filter(i=>i.done).length;
+  const total=arr.length;
+  return`<div style="border-top:1px dashed var(--line);margin:14px 0 0;opacity:.4"></div>
+  <div style="margin-top:12px;padding-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:6px">
+        ${ic('shopping-cart',14)}
+        <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Lista zakupów</span>
+      </div>
+      ${total?`<span style="font-size:11px;color:var(--muted)">${done}/${total} kupione</span>`:''}
+    </div>
+    <div id="shop-list-inner">${shopItemsHtml(arr)}</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input id="shop-inp" placeholder="Dodaj produkt…" style="flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--ink);outline:none"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addShopItem()}"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line)'">
+      <button onclick="addShopItem()" style="background:var(--accent);border:none;border-radius:10px;padding:0 16px;font-size:20px;color:#1a0f06;cursor:pointer;font-weight:700">+</button>
+    </div>
+  </div>`;
+}
 function renderDash(){
   const tb=STATE.stages.reduce((a,s)=>a+Number(s.budget||0),0);
   const ts=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
@@ -830,24 +889,7 @@ function renderDash(){
   }
   h+=`</div>`;
 
-  const _todayKey='claude_tok_'+new Date().toISOString().slice(0,10);
-  const _tok=JSON.parse(localStorage.getItem(_todayKey)||'{"i":0,"o":0}');
-  const _total=_tok.i+_tok.o;
-  const _cost=(_tok.i*0.0000008+_tok.o*0.000004);
-  const _costStr=_cost<0.0001?(_total>0?'< $0.0001':'—'):('~$'+_cost.toFixed(4));
-  h+=`<div style="border-top:1px dashed var(--line);margin:14px 2px 10px;opacity:.35"></div>
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 2px 12px">
-    <div style="display:flex;align-items:center;gap:6px">
-      ${ic('bot',13)}
-      <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Claude dziś</span>
-    </div>
-    <div style="text-align:right">
-      ${_total>0
-        ?`<span style="font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums">${_total.toLocaleString('pl-PL')} tok.</span>
-           <span style="font-size:11px;color:var(--muted);margin-left:6px">${_costStr}</span>`
-        :`<span style="font-size:11px;color:var(--muted)">brak aktywności</span>`}
-    </div>
-  </div>`;
+  h+=renderShoppingWidget();
 
   return h;
 }
@@ -1504,7 +1546,10 @@ function openAI(){
   if(!aiDisp.length){
     const tc=STATE.costs.reduce((a,c)=>a+Number(c.amount||0),0);
     const done=STATE.todos.filter(t=>t.done).length;
-    aiDisp=[{r:'a',cls:'welcome',t:'Cześć! 👋 Jestem asystentem Klövervägen 12.\n\nAktualnie:\n• '+STATE.stages.length+' etapów remontu\n• '+STATE.todos.length+' zadań ('+done+' ukończonych)\n• '+money(tc)+' wydatków łącznie\n\nMożesz pisać lub użyć mikrofonu 🎤\nCo zrobimy?'}];
+    const _tok=JSON.parse(localStorage.getItem('claude_tok_'+new Date().toISOString().slice(0,10))||'{"i":0,"o":0}');
+    const _tokTotal=_tok.i+_tok.o;
+    const _tokLine=_tokTotal>0?'\n\n🤖 Claude dziś: '+_tokTotal.toLocaleString('pl-PL')+' tok. (~$'+(_tok.i*0.0000008+_tok.o*0.000004).toFixed(4)+')':'';
+    aiDisp=[{r:'a',cls:'welcome',t:'Cześć! 👋 Jestem asystentem Klövervägen 12.\n\nAktualnie:\n• '+STATE.stages.length+' etapów remontu\n• '+STATE.todos.length+' zadań ('+done+' ukończonych)\n• '+money(tc)+' wydatków łącznie'+_tokLine+'\n\nMożesz pisać lub użyć mikrofonu 🎤\nCo zrobimy?'}];
     renderAI();
   }
   setTimeout(()=>document.getElementById('ai-txt')?.focus(),350);
