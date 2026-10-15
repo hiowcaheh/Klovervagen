@@ -276,11 +276,6 @@
   .ix-badge{font-size:11px;background:var(--line);color:var(--ink);padding:1px 7px;border-radius:10px;font-variant-numeric:tabular-nums}
   .ix-tabs button.on .ix-badge{background:rgba(0,0,0,.18);color:#1a0f06}
 
-  .ix-live{position:sticky;top:8px;z-index:3;margin:10px 14px 0;display:flex;align-items:center;gap:8px;background:var(--panel);
-    border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:9px 11px;font-size:12px;cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.45);color:var(--accent)}
-  .ix-lv{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
-  .ix-lv b{color:var(--ink);font-weight:600}
   .ix-msgs{padding:14px;display:flex;flex-direction:column;gap:10px}
   .ix-msgs .msg-a{max-width:92%}
   .ix-day{align-self:center;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:600;margin:4px 0}
@@ -2028,10 +2023,7 @@ function ixTab(t){
 function ixRenderMsgs(toBottom){
   const box=document.getElementById('ixMsgs');if(!box||!IX.cur||!IX.msgs)return;
   const keep=box.scrollTop;
-  const facts=ixFactsOf(IX.cur.id);
-  let h='';
-  if(facts.length)h+=`<div class="ix-live" onclick="ixTab('facts')">${ic('pin',14)}<div class="ix-lv"><b>${plPl(facts.length,'ustalenie','ustalenia','ustaleń')}</b> · ostatnio: ${esc(facts[0].label)}: ${esc(facts[0].value)}</div>${ic('chevron-right',14)}</div>`;
-  h+='<div class="ix-msgs">';
+  let h='<div class="ix-msgs">';
   if(!IX.msgs.length){
     h+=`<div class="msg-a welcome">Zaczynamy: <strong>${esc(IX.cur.title)}</strong> 💡<br>Opisz, co chcesz zrobić — wymiary, efekt, budżet, czy robisz sam. Policzę materiały, podpowiem produkty i rozpiszę zadania, a każdy konkret zapiszę w zakładce <strong>Ustalenia</strong>.</div>
       <div class="ix-starters">
