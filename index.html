@@ -1763,7 +1763,7 @@ Jak pracujesz:
 1. Konkretnie i dokładnie. Licz ilości materiałów z zapasem i pokazuj krótko, skąd wynik. Podawaj kolejność prac, typowe pułapki i szwedzkie wymagania, gdy mają znaczenie (np. GVK / Säker Vatten przy łazienkach, BBR, prace elektryczne tylko przez elektryka z uprawnieniami).
 2. Ustalenia to pamięć pomysłu – prowadzisz je przez fact_ops przy każdej odpowiedzi. Każdy konkret z rozmowy (wymiar, materiał, kolor, model, ilość, cena, budżet, decyzja, wykonawca, termin) zapisz jako osobne ustalenie: krótka nazwa (label) i precyzyjna wartość (value) z jednostkami. Gdy wartość się zmienia, użyj "update" z identyfikatorem istniejącego ustalenia zamiast tworzyć duplikat. Gdy użytkownik prosi o zmianę lub usunięcie ustalenia (np. „zmień okno na 70×90”, „usuń fugę”), zrób to przez fact_ops i potwierdź w odpowiedzi. Otwarte kwestie zapisuj w kategorii "Do ustalenia" jako pytanie; gdy zostaną rozstrzygnięte, usuń pytanie i zapisz odpowiedź jako ustalenie we właściwej kategorii. Rzeczy niepewne trafiają do "Do ustalenia", nie jako fakty. Kategoria "Budżet" to kwoty i limity, "Decyzje" to wybory typu tak/nie lub wariant.
 3. Działania: task_suggestions to konkretne, wykonalne kroki; shopping_suggestions to zakupy z ilością. Proponuj je tylko, gdy wynikają z bieżącej wiadomości, i nie powtarzaj wcześniej zaproponowanych. Mateusz sam decyduje, czy je dodać.
-4. Produkty: gdy rozmowa dotyczy wyboru materiału lub sprzętu, podaj w products do 3 propozycji – pełną nazwę handlową albo precyzyjny opis do wpisania w wyszukiwarkę sklepu, szwedzki sklep, w którym typowo się to kupuje (np. Bauhaus, Byggmax, K-Rauta, Beijer, Hornbach, IKEA, Clas Ohlson, Elgiganten), i orientacyjną cenę w kr. Nie masz dostępu do internetu: ceny i dostępność są szacunkowe, nie podawaj linków ani numerów artykułów.
+4. Produkty: gdy rozmowa dotyczy wyboru materiału lub sprzętu, podaj w products do 3 propozycji dostępnych w Szwecji – w name pełną nazwę handlową albo precyzyjny opis po polsku, w name_sv tę samą nazwę po szwedzku, dokładnie tak, jak produkt nazywa się w szwedzkich sklepach (to fraza do wyszukania w szwedzkim Google, np. "klinker 60x60 grafit matt"), szwedzki sklep, w którym typowo się to kupuje (np. Bauhaus, Byggmax, K-Rauta, Beijer, Hornbach, IKEA, Clas Ohlson, Elgiganten), i orientacyjną cenę w kr. Nie masz dostępu do internetu: ceny i dostępność są szacunkowe, nie podawaj linków ani numerów artykułów.
 5. Gdy brakuje kluczowych danych, zadaj 1–3 konkretne pytania (najważniejsze najpierw) zamiast zgadywać.
 6. Zdjęcia: opisz, co na nich widać istotnego dla pomysłu (materiały, stan, szacunkowe wymiary, problemy), i zapisz z tego ustalenia.
 
@@ -1779,8 +1779,8 @@ const IX_SCHEMA={type:'object',additionalProperties:false,required:['reply','fac
   task_suggestions:{type:'array',items:{type:'object',additionalProperties:false,required:['text','priority','stage_id'],properties:{
     text:{type:'string'},priority:{type:'string',enum:['high','mid','low']},stage_id:{type:'string'}}}},
   shopping_suggestions:{type:'array',items:{type:'object',additionalProperties:false,required:['text'],properties:{text:{type:'string'}}}},
-  products:{type:'array',items:{type:'object',additionalProperties:false,required:['name','shop','approx_price','note'],properties:{
-    name:{type:'string'},shop:{type:'string'},approx_price:{type:'string'},note:{type:'string'}}}}
+  products:{type:'array',items:{type:'object',additionalProperties:false,required:['name','name_sv','shop','approx_price','note'],properties:{
+    name:{type:'string'},name_sv:{type:'string'},shop:{type:'string'},approx_price:{type:'string'},note:{type:'string'}}}}
 }};
 
 function trackTokens(usage,model){
@@ -2063,13 +2063,14 @@ function ixMsgHtml(m){
   let h=`<div class="msg-a">${ixMd(m.content)}`;
   if(meta.products?.length){
     h+=`<div class="ix-prods">${meta.products.map((p,k)=>{
-      const g='https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.name);
+      const g='https://www.google.se/search?tbm=isch&hl=sv&gl=se&q='+encodeURIComponent(p.name_sv||p.name);
       return`<div class="ix-prod"><div class="ix-prod-top">
         <a class="ix-prod-img" href="${g}" target="_blank" rel="noopener" aria-label="Zdjęcia produktu w Google">${ic('image',20)}zdjęcia</a>
         <div class="ix-prod-b"><div class="ix-prod-t">${esc(p.name)}</div>
+          ${p.name_sv?`<div class="ix-prod-s">🇸🇪 ${esc(p.name_sv)}</div>`:''}
           <div class="ix-prod-s">${esc([p.shop,p.note].filter(Boolean).join(' · '))}</div>
           ${p.approx_price?`<div class="ix-prod-p">${esc(p.approx_price)} <small>orientacyjnie</small></div>`:''}</div></div>
-        <div class="ix-prod-acts"><a href="${g}" target="_blank" rel="noopener">${ic('image',14)}Zdjęcia w Google</a>
+        <div class="ix-prod-acts"><a href="${g}" target="_blank" rel="noopener">${ic('image',14)}Zdjęcia w Google.se</a>
         <button class="${p.done?'done':''}" onclick="ixAct('${m.id}','products',${k})">${p.done?'✓ Na liście':ic('shopping-cart',14)+'Do listy'}</button></div></div>`;
     }).join('')}</div>`;
   }
@@ -2123,7 +2124,7 @@ async function ixAct(mid,kind,k){
     if(error){showToast('Błąd zapisu zadania','err');return;}
     STATE.todos.push(data);render();showToast('Dodano zadanie: '+it.text,'ok');
   }else{
-    const text=kind==='products'?it.name+(it.shop?' — '+it.shop:''):it.text;
+    const text=kind==='products'?it.name+(it.name_sv?' ('+it.name_sv+')':'')+(it.shop?' — '+it.shop:''):it.text;
     const arr=getShopList();arr.push({id:Date.now().toString(36),text,done:false});saveShopList(arr);
     render();showToast('Dodano do listy zakupów','ok');
   }
@@ -2359,7 +2360,7 @@ async function sendAI(){
     const meta={fx,
       tasks:(out.task_suggestions||[]).filter(t=>str(t.text)).map(t=>({text:str(t.text),priority:['high','mid','low'].includes(t.priority)?t.priority:'mid',stage_id:ctx.smap[t.stage_id]||'',done:false})),
       shop:(out.shopping_suggestions||[]).filter(t=>str(t.text)).map(t=>({text:str(t.text),done:false})),
-      products:(out.products||[]).filter(p=>str(p.name)).slice(0,3).map(p=>({name:str(p.name),shop:str(p.shop),approx_price:str(p.approx_price),note:str(p.note),done:false}))};
+      products:(out.products||[]).filter(p=>str(p.name)).slice(0,3).map(p=>({name:str(p.name),name_sv:str(p.name_sv),shop:str(p.shop),approx_price:str(p.approx_price),note:str(p.note),done:false}))};
     const reply=str(out.reply)||'Zapisane.';
     const{data:am,error:ae}=await sb.from('idea_messages').insert({idea_id:idea.id,user_id:USER.id,role:'assistant',content:reply,raw,meta}).select().single();
     if(ae)throw new Error('Błąd zapisu odpowiedzi');
