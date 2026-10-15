@@ -48,15 +48,15 @@ Nigdy nie aktualizuj UI bez zapisu w bazie i nigdy nie zostawiaj STATE rozjechan
 ### Nawigacja i render
 - `render(dir?)` — przerysowuje aktywny widok; `dir='left'|'right'` odpala animację slide przy swipe
 - `TAB_ORDER = ['dash','stages','todo','costs']` — kolejność swipe. **AI nie jest w tej tablicy**, a `activeTab` nigdy nie przyjmuje wartości `'ai'` — asystent to overlay nad aplikacją, nie zakładka.
-- Dolny pasek: grid 5 kolumn — Przegląd | Etapy | 🍀 AI | Zadania | Wydatki
+- Dolny pasek: grid 5 kolumn — Przegląd | Etapy | 🍀 Pomysły | Zadania | Wydatki
 - `showToast(msg, type?)` z type `'ok' | 'err'` — jedyny kanał feedbacku; każda operacja zapisu kończy się toastem
 
 ### Kotwice do nawigacji po kodzie
-Plik jest duży — zanim coś zmienisz, znajdź i przeczytaj właściwy fragment (grep): `STATE`, `render(`, `showToast(`, `TAB_ORDER`, `activeTab`, `aiHist`, `sb.from(`, nazwy tabel, polskie teksty UI. Kod w scratchpadzie jest prawdą — nie edytuj z pamięci ani z założeń.
+Plik jest duży — zanim coś zmienisz, znajdź i przeczytaj właściwy fragment (grep): `STATE`, `render(`, `showToast(`, `TAB_ORDER`, `activeTab`, `IX`, `sb.from(`, nazwy tabel, polskie teksty UI. Kod w scratchpadzie jest prawdą — nie edytuj z pamięci ani z założeń.
 
 ## 4. Baza danych (Supabase)
 
-Projekt `tzmtniliiopdlilsmsda`, region eu-central-1. Wszystkie tabele mają RLS; klient `sb` działa jako zalogowany użytkownik. Przy insertach ustawiaj `user_id` tak, jak robi to istniejący kod.
+Projekt `rxmpyclpqgcxxwgnvgdz` (FirstChaos, plan Pro — dzielony z grą, ruszaj tylko tabele aplikacji), region eu-central-2. Wszystkie tabele mają RLS; klient `sb` działa jako zalogowany użytkownik. Przy insertach ustawiaj `user_id` tak, jak robi to istniejący kod.
 
 | tabela | kolumny |
 |---|---|
@@ -64,12 +64,16 @@ Projekt `tzmtniliiopdlilsmsda`, region eu-central-1. Wszystkie tabele mają RLS;
 | `todos` | id, user_id, text, stage_id, priority (`high/mid/low`), done (bool) |
 | `costs` | id, user_id, title, amount (SEK), stage_id, date, note, category (`materials/labor/tools/other`), file_path, file_type, file_name |
 | `settings` | user_id, house_name |
+| `ideas` | id, user_id, title, icon (emoji), stage_id, status (`active/done`), last_snippet, tasks_added, shop_added, updated_at |
+| `idea_messages` | id, idea_id, user_id, role (`user/assistant`), content, raw (JSON odpowiedzi), image_path, meta (jsonb: fx, tasks, shop, products) |
+| `idea_facts` | id, idea_id, user_id, category, label, value, source (`ai/manual`), history (jsonb), updated_at |
 
 Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą być puste — pozycje bez etapu). Przy zmianach logiki usuwania etapów najpierw sprawdź w kodzie, jak obsługiwane są powiązane zadania i wydatki.
 
 **Storage:** bucket `paragony`
 - załączniki wydatków: `paragony/{user_id}/…`
 - galeria domu: `paragony/{user_id}/galeria/`
+- zdjęcia w pomysłach: `paragony/{user_id}/ideas/{idea_id}/`
 
 **Zmiany schematu:** nigdy nie pushuj kodu zależnego od kolumn/tabel, których jeszcze nie ma w bazie. Jeśli funkcja wymaga zmiany schematu, najpierw daj Mateuszowi gotowy SQL do wklejenia w Supabase SQL Editor (razem z politykami RLS), poczekaj na potwierdzenie, dopiero potem pushuj kod.
 
@@ -83,21 +87,19 @@ Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą by�
 6. **Wydatki** — CRUD, 4 kategorie, filtrowanie 2-poziomowe (etap + kategoria), upload zdjęć/PDF; kompresja zdjęć: canvas → JPEG, max 1080 px, max ~300 KB
 7. **Galeria domu** — zdjęcia z `paragony/{user_id}/galeria/`, siatka 2 kolumny, pinch-zoom
 8. **Ustawienia** — nazwa domu (tabela `settings`), klucz Claude API (localStorage `claude_key`), odłączenie bazy
-9. **AI Asystent 🍀** — sekcja 6
+9. **Pomysły 🍀** — sekcja 6
 
-## 6. AI Asystent
+## 6. Pomysły 🍀 (moduł AI)
 
-- Pełnoekranowy czat, slide-up overlay, `z-index: 55`
-- Przycisk w środkowym slocie paska: zielony orb, `gradient(145deg, #4ade80 → #16a34a → #14532d)`, animacja pulsowania
-- Model `claude-haiku-4-5-20251001`, endpoint `api.anthropic.com/v1/messages`, klucz z localStorage `claude_key`
-- **Wymagany header** `anthropic-dangerous-direct-browser-access: true` — bez niego przeglądarka zablokuje żądanie (CORS)
-- **Format narzędzi Claude, NIE OpenAI**: `{name, description, input_schema}` — bez wrappera `function`, bez pola `parameters`
-- 10 narzędzi: `query_data` + add/edit/delete dla stages, todos i costs (1 + 3×3)
-- Pętla agentyczna, max 8 iteracji: `stop_reason === 'tool_use'` → wykonaj narzędzia → dołóż bloki `tool_result` → kolejne wywołanie API
-- Narzędzia mutujące przechodzą przez ten sam wzorzec `sb → STATE → render()` — UI pod overlayem ma być aktualny po zamknięciu czatu
-- Historia `aiHist[]` w natywnym formacie Claude; **bloki `tool_use`/`tool_result` muszą pozostać w historii** — ich usunięcie lub uszkodzenie psuje kolejne wywołania API
-- System prompt asystenta budowany dynamicznie ze `STATE` przy każdym wywołaniu — model zawsze widzi aktualne etapy, zadania i wydatki
-- Renderowanie odpowiedzi: markdown `**bold**`, `*italic*`, `` `code` ``
+- Pełnoekranowy overlay `#ai-ov`, `z-index: 55`, otwierany orbem w środkowym slocie paska (`openAI()`). Dwa ekrany: lista pomysłów (`#ixList`) i pomysł (`#ixChat`) z zakładkami **Rozmowa** / **Ustalenia**. Stan modułu w obiekcie `IX`, funkcje z prefiksem `ix`.
+- Każdy pomysł = osobna rozmowa z Claude + lista Ustaleń (kategorie: Wymiary, Materiały, Instalacje, Budżet, Decyzje, Inne, Do ustalenia). Ikona = dowolne emoji z klawiatury telefonu.
+- Model `claude-sonnet-5-5`, effort `medium`, endpoint `api.anthropic.com/v1/messages`, klucz z localStorage `claude_key`, header `anthropic-dangerous-direct-browser-access: true`. Fallback `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`); jeśli API go odrzuci, kod ponawia bez niego.
+- **Bez narzędzi** — odpowiedź to structured output (`output_config.format`, schemat `IX_SCHEMA`): `reply`, `fact_ops` (add/update/delete ustaleń, identyfikatory F1…), `task_suggestions` (etapy E1…), `shopping_suggestions`, `products`. Ustalenia zapisują się automatycznie; zadania/zakupy/produkty to przyciski, które użytkownik klika.
+- Statyczny system prompt `IX_SYS` (z cache_control). Dynamiczny kontekst (ustalenia, etapy, budżety, zadania, lista zakupów) dokładany jako ostatni blok ostatniej wiadomości użytkownika w `<kontekst_aplikacji>` — nie zmieniaj tego układu, bo psuje cache.
+- Historia odtwarzana z bazy jako sam tekst (asystent = surowy JSON z kolumny `raw`), **bez bloków thinking** — dzięki temu zmiany kontekstu nie łamią „preserved thinking”. Zdjęcia: 3 ostatnie jako base64, starsze jako tekst.
+- Brak internetu w AI: produkty mają pełną nazwę, sklep, orientacyjną cenę i link do Google Grafika.
+- Skanowanie paragonów (`scanReceipt`): `claude-haiku-5-5`, effort `low`, structured output `{title, amount, date}`.
+- Koszt dnia liczony w `trackTokens(usage, model)` → localStorage `claude_tok_YYYY-MM-DD` (`c` = USD), widoczny w nagłówku listy pomysłów.
 - Głos (Web Speech API): `continuous = true`; klik = start nagrywania, drugi klik = stop **i wysłanie**. Nigdy auto-send po ciszy.
 
 ## 7. Design system
