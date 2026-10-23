@@ -391,6 +391,131 @@
   .ix-menu button.red{color:#e07070;border-color:rgba(208,80,80,.3);background:rgba(208,80,80,.08)}
   .sheet-actions .btn-del.sq{flex:0 0 54px;display:grid;place-items:center}
 
+  /* ===== PLAN DOMU ===== */
+  :root{--c-light:#f2c14e;--c-led:#f08a4b;--c-blind:#8fb3d9;--c-power:#e06c6c;--c-cam:#b48cf2;
+    --c-sensor:#4fc3a1;--c-climate:#5fb8e0;--c-wifi:#7b93ff;--c-audio:#e58fd0;--c-garden:#7cc576;
+    --hp-wall:rgba(242,234,219,.85);--hp-thin:rgba(242,234,219,.22);--hp-marker-ink:#14110d}
+  #hp-ov{position:fixed;inset:0;z-index:55;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;
+    transform:translateY(100%);transition:transform .35s cubic-bezier(.22,.68,0,1.1);will-change:transform}
+  #hp-ov.open{transform:translateY(0)}
+  #hp-ov .ix-hdr{border-bottom:1px solid var(--line)}
+  .hp-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    padding:12px 14px calc(96px + env(safe-area-inset-bottom,0px))}
+  #hp-ov.panel .hp-body{padding-bottom:66vh}
+  .hp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+  .hp-kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 9px;min-width:0}
+  .hp-kpi.wide{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .hp-kpi .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .hp-kpi.wide .v{color:var(--accent)}
+  .hp-kpi .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-top:2px;line-height:1.25}
+  .hp-tools{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;align-items:stretch}
+  .hp-tools .seg{flex:1 1 100%;min-width:0}
+  .hp-tools .hp-tbtn{flex:1;justify-content:center}
+  .hp-tools .seg button{padding:9px 4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hp-tbtn{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:0 10px;
+    font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap;min-height:42px}
+  .hp-tbtn.on{color:var(--ink);border-color:var(--accent);background:rgba(224,120,48,.12)}
+  .hp-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+  .hp-chips::-webkit-scrollbar{display:none}
+  .hp-chip{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:20px;
+    font-size:12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;min-height:36px}
+  .hp-chip i{width:9px;height:9px;border-radius:50%;display:block;flex-shrink:0}
+  .hp-chip.off{opacity:.4;text-decoration:line-through}
+  .hp-mapwrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:auto;-webkit-overflow-scrolling:touch}
+  .hp-map{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  .hp-mapwrap.zoom .hp-map{width:240%}
+  .hp-mapwrap.pick .hp-map{cursor:crosshair}
+  .hp-banner{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:10px;background:var(--accent);color:#1a0f06;
+    border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.35;margin-bottom:8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .hp-banner button{margin-left:auto;background:var(--bg);color:var(--ink);border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;flex-shrink:0}
+  .hp-o{fill:var(--panel-2);stroke:var(--hp-wall);stroke-width:.12;stroke-linejoin:round}
+  .hp-r{fill:none;stroke:var(--hp-thin);stroke-width:.04}
+  .hp-z{fill:none;stroke:var(--muted);stroke-width:.04;stroke-dasharray:.22 .14}
+  .hp-f{fill:rgba(242,234,219,.06);stroke:var(--hp-thin);stroke-width:.03}
+  .hp-st{fill:none;stroke:var(--hp-thin);stroke-width:.03}
+  .hp-w{stroke:var(--blue);stroke-width:.17}
+  .hp-g{stroke:var(--accent);stroke-width:.08;stroke-dasharray:.25 .15}
+  .hp-l{fill:var(--muted);font-weight:600;text-anchor:middle;dominant-baseline:central}
+  .hp-sc{stroke:var(--ink);stroke-width:.06}
+  .hp-sct{fill:var(--ink);font-weight:600;text-anchor:middle}
+  .hp-pt,.hp-gh{cursor:pointer}
+  .hp-pt text{fill:var(--hp-marker-ink);font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .hp-pt .m{stroke:var(--bg);stroke-width:.05}
+  .hp-pt.sel .m{stroke:var(--ink);stroke-width:.1}
+  .hp-gh .m{fill:rgba(15,13,10,.6);stroke-width:.06;stroke-dasharray:.13 .09}
+  .hp-gh text{font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .hp-gh.sel .m{stroke-width:.1;stroke-dasharray:none}
+  .hp-hit{fill:transparent}
+  .hp-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
+  .hp-h3{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin:0 0 8px;display:flex;align-items:center;gap:7px}
+  .hp-hint{display:flex;gap:9px;font-size:13.5px;line-height:1.45;padding:9px 0}
+  .hp-hint+.hp-hint{border-top:1px solid var(--line)}
+  .hp-hint .lucide{color:var(--accent);margin-top:2px}
+  .hp-tblwrap{overflow-x:auto}
+  .hp-tbl{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .hp-tbl th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700;text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+  .hp-tbl td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+  .hp-tbl .n{text-align:right;white-space:nowrap}
+  .hp-tbl tfoot td{font-weight:700;border-bottom:none;color:var(--accent)}
+  .hp-note{font-size:12px;color:var(--muted);line-height:1.45;margin-top:10px}
+  .hp-li{display:flex;align-items:center;gap:11px;padding:9px 0;cursor:pointer;min-height:48px}
+  .hp-li+.hp-li{border-top:1px solid var(--line)}
+  .hp-li:active{opacity:.7}
+  .hp-li-b{flex:1;min-width:0}
+  .hp-li-t{font-size:14px;font-weight:600}
+  .hp-li-s{font-size:12px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hp-dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:800;
+    color:var(--hp-marker-ink);flex-shrink:0;letter-spacing:-.2px}
+  .hp-dot.gh{background:transparent!important;border:2px dashed currentColor}
+  .hp-floorh{font-size:15px;font-weight:700;margin:18px 2px 0}
+  .hp-sv{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.55;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;color:var(--ink);min-height:240px;resize:vertical;outline:none}
+  .hp-copy{width:100%;margin-top:10px;background:var(--accent);color:#1a0f06;font-weight:700;font-size:15px;padding:13px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;gap:8px}
+  .hp-cat-i{padding:12px 0}
+  .hp-cat-i+.hp-cat-i{border-top:1px solid var(--line)}
+  .hp-cat-t{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+  .hp-cat-t b{font-size:14.5px}
+  .hp-cat-t span{font-size:12.5px;color:var(--accent);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .hp-cat-d{font-size:13px;color:var(--muted);line-height:1.45;margin-top:3px}
+  .hp-cat-add{margin-top:8px;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 12px;
+    font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .hp-addbtn{position:absolute;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--accent);color:#1a0f06;
+    font-weight:700;font-size:15px;border-radius:28px;padding:14px 20px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(224,120,48,.4)}
+  .hp-addbtn:active{transform:scale(.96)}
+  .hp-panel{position:absolute;left:0;right:0;bottom:0;z-index:6;max-height:62%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;background:var(--panel);border-top:1px solid var(--line);border-radius:20px 20px 0 0;
+    padding:18px 16px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.5);
+    transform:translateY(105%);transition:transform .25s cubic-bezier(.22,.68,0,1.1)}
+  .hp-panel.open{transform:translateY(0)}
+  .hp-ph{display:flex;align-items:center;gap:12px;margin:0 40px 14px 0}
+  .hp-ph-t{font-size:17px;font-weight:700;line-height:1.25}
+  .hp-ph-s{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .hp-panel .field{margin-bottom:12px}
+  .hp-cost{font-size:14px;font-weight:600;margin:4px 0 2px}
+  .hp-cost b{color:var(--accent)}
+  .hp-why{font-size:15px;line-height:1.5;margin:0 0 10px}
+  .hp-sec{margin-top:16px}
+  .hp-sec h4{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px;margin:0 0 5px}
+  .hp-sec p{font-size:14px;line-height:1.5;margin:0}
+  .hp-sec ul{margin:0;padding-left:18px;font-size:14px;line-height:1.5}
+  .hp-sec li{margin:3px 0}
+  .hp-confirm{background:rgba(208,80,80,.08);border:1px solid rgba(208,80,80,.3);border-radius:12px;padding:12px;margin-top:12px;font-size:14px}
+  .hp-confirm .sheet-actions{margin-top:10px}
+  .hp-type{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:12px;padding:10px 12px;margin-bottom:7px;color:var(--ink);min-height:52px}
+  .hp-type .hp-dot{width:32px;height:32px}
+  .hp-type b{display:block;font-size:14px;font-weight:600}
+  .hp-type small{display:block;font-size:12px;color:var(--muted);margin-top:1px;line-height:1.35}
+  .hp-typecat{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px;margin:14px 2px 7px}
+  @media (min-width:900px){
+    .hp-panel{left:auto;top:61px;width:390px;max-height:none;border-radius:0;border-top:none;border-left:1px solid var(--line);
+      transform:translateX(105%)}
+    .hp-panel.open{transform:translateX(0)}
+    #hp-ov.panel .hp-body{padding-right:404px;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+    #hp-ov.panel .hp-addbtn{right:406px}
+  }
+
   /* ===== SEARCH / SORT ===== */
   .searchbar{position:relative}
   .searchbar input{background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
@@ -494,7 +619,7 @@
   <nav class="tabs">
     <button data-tab="dash" class="active" onclick="go('dash')"><span class="ic"><i data-lucide="layout-dashboard"></i></span>Przegląd</button>
     <button data-tab="stages" onclick="go('stages')"><span class="ic"><i data-lucide="layers"></i></span>Etapy</button>
-    <button class="ai-tab-btn" onclick="openAI()">
+    <button class="ai-tab-btn" onclick="openPlan()" aria-label="Plan domu">
       <div class="ai-orb"><span style="font-size:19px;line-height:1">🍀</span></div>
     </button>
     <button data-tab="todo" onclick="go('todo')"><span class="ic"><i data-lucide="list-checks"></i></span>Zadania</button>
@@ -547,6 +672,17 @@
       <button class="ix-cb" id="ai-snd" onclick="sendAI()" aria-label="Wyślij"><i data-lucide="send" style="width:18px;height:18px"></i></button>
     </div>
   </section>
+</div>
+
+<div id="hp-ov">
+  <div class="ix-hdr">
+    <div class="ai-orb-sm"><span style="font-size:14px;line-height:1">🍀</span></div>
+    <div class="ix-grow"><div class="ix-t">Plan domu</div><div class="ix-s" id="hpSub">Instalacje smart home</div></div>
+    <button class="icon-btn" onclick="closePlan()" aria-label="Zamknij plan domu"><i data-lucide="x"></i></button>
+  </div>
+  <div class="hp-body" id="hpBody"></div>
+  <button class="hp-addbtn" id="hpAdd" onclick="hpPickType()" style="display:none"><i data-lucide="plus" style="width:18px;height:18px"></i>Dodaj punkt</button>
+  <div class="hp-panel" id="hpPanel" role="dialog" aria-label="Szczegóły punktu"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1704,7 +1840,7 @@ function initSwipe(){
   const modal=document.getElementById('modal');
   app.addEventListener('touchstart',e=>{
     if(modal.classList.contains('open')){skip=true;return;}
-    if(document.getElementById('ai-ov').classList.contains('open')){skip=true;return;}
+    if(document.getElementById('ai-ov').classList.contains('open')||document.getElementById('hp-ov').classList.contains('open')){skip=true;return;}
     // nie przechwytuj gestów startujących na przewijalnym pasku filtrów
     if(e.target.closest('.filterbar')){skip=true;return;}
     skip=false;
@@ -2367,6 +2503,644 @@ async function sendAI(){
   if(IX.cur===idea){ixHeader();ixRenderMsgs(true);}
   ixRenderList();
 }
+/* ============ PLAN DOMU ============ */
+const HP_CATS=[
+  {id:'light',name:'Światło 230 V',css:'--c-light'},{id:'led',name:'LED 24 V',css:'--c-led'},
+  {id:'window',name:'Okna i rolety',css:'--c-blind'},{id:'power',name:'Gniazda i zasilanie',css:'--c-power'},
+  {id:'security',name:'Kamery i zamki',css:'--c-cam'},{id:'sensor',name:'Czujniki',css:'--c-sensor'},
+  {id:'climate',name:'Klimat',css:'--c-climate'},{id:'net',name:'Apple i Wi-Fi',css:'--c-wifi'},
+  {id:'audio',name:'Audio i TV',css:'--c-audio'},{id:'garden',name:'Ogród i garaż',css:'--c-garden'}
+];
+const HP_PSU=[[60,450],[100,650],[150,800],[240,1100],[320,1400]];
+function hpPsuFor(watts){
+  const need=watts*1.25;
+  for(const[w,price]of HP_PSU){if(need<=w)return{count:1,w,price};}
+  return{count:Math.ceil(need/320),w:320,price:1400};
+}
+function hpPsuItem(watts){const p=hpPsuFor(watts);return['Zasilacz LED 24 V '+p.w+' W z wejściem 0-10V',p.count,p.price];}
+
+const HP_T={
+  lamp:{cat:'light',p:'L',name:'Lampa sufitowa lub kinkiet',what:'Włączanie i wyłączanie z Hem, Siri i automatyzacji.',device:'Shelly 1PM Gen4 (Matter) w puszce za zwykłym włącznikiem. Dwa obwody w jednym miejscu: Shelly 2PM Gen4.',needs:['Przewód neutralny (N) w puszce włącznika','Głęboka puszka'],tips:['Włącznik zostaje zwykły i działa także bez Wi-Fi.','Chcesz ściemniać? Wybierz typ „Lampa ściemniana”.'],apple:'Światło w Hem.',who:'Elektryk',qtyLabel:'Obwody w tym miejscu',def:1,
+    items:p=>p.qty>=2?[['Shelly 2PM Gen4',Math.ceil(p.qty/2),450]]:[['Shelly 1PM Gen4',1,300]],
+    sv:'Nolla (N) och djup apparatdosa vid strömbrytaren för Shelly ({c}).'},
+  dim:{cat:'light',p:'LD',name:'Lampa ściemniana lub spoty 230 V',what:'Płynne ściemnianie z Hem i Siri.',device:'Shelly Dimmer Gen4 (Matter) w puszce za włącznikiem.',needs:['N i głęboka puszka przy włączniku','Ściemnialne oprawy lub żarówki (oznaczenie „dimbar”)'],tips:['„Ilość” to liczba spotów na obwodzie, do zamówienia opraw.','Sprawdź maksymalną moc ściemniacza w instrukcji.'],apple:'Ściemniane światło w Hem.',who:'Elektryk',qtyLabel:'Liczba opraw (informacyjnie)',def:1,
+    items:()=>[['Shelly Dimmer Gen4',1,550]],
+    sv:'Nolla (N) och djup apparatdosa för Shelly Dimmer Gen4, dimbara armaturer ({c}).'},
+  stairs:{cat:'light',p:'LS',name:'Oświetlenie schodów',what:'Lampki w ścianie przy stopniach, włączane ruchem nocą.',device:'Lampki 230 V w ścianie na Shelly 1PM Gen4 i dwa czujniki ruchu (góra, dół).',needs:['Puszki na lampki przy stopniach, np. co drugi stopień','Przewody do wspólnej puszki ze Shelly'],tips:['Automatyzacja: ruch między 22 a 6 → lampki na 2 minuty.'],apple:'Światło i czujniki ruchu w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300],['IKEA MYGGSPRAY (czujnik ruchu)',2,150]],
+    sv:'Infällda dosor för trappbelysning vid trappstegen, kablar till gemensam dosa med Shelly ({c}).'},
+  outlamp:{cat:'light',p:'LZ',name:'Lampa zewnętrzna',what:'Lampy na elewacji, przy wejściu, na tarasie.',device:'Shelly 1PM Gen4 w puszce wewnątrz domu, lampa IP44 lub wyżej.',needs:['Przewód do lampy na elewacji','Puszka na Shelly w suchym miejscu wewnątrz'],tips:['Automatyzacja: włącz o zachodzie słońca, wyłącz o 23:00.'],apple:'Światło w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300]],
+    sv:'Utomhusbelysning på fasaden, styrd från dosa inomhus med Shelly ({c}).'},
+
+  cove:{cat:'led',p:'LC',name:'LED w uskoku sufitu',what:'Ściemniana linia światła w podwieszanym suficie lub wnęce.',device:'Taśma LED 24 V + zasilacz z wejściem 0-10V (np. Mean Well PWM) + Shelly Dimmer 0/1-10V PM Gen4 (Matter).',needs:['Przewód 230 V do miejsca zasilacza (elektryk)','Zasilacz w dostępnym, przewiewnym miejscu: klapka rewizyjna, nigdy na stałe w suficie','Przewód 24 V 2×1,5 mm² od zasilacza do taśmy','Przewód sterujący 0-10V od Shelly do zasilacza','Puszka na Shelly przy włączniku'],tips:['Taśma COB, CRI ≥ 90, 2700–3000 K: równa, ciepła linia bez kropek.','Profil aluminiowy z mlecznym kloszem chłodzi taśmę i rozprasza światło.','Inne sterowanie: Shelly Plus RGBW PM (4 kanały z jednego zasilacza, także CCT; Matter sprawdzimy w aktualnym firmware) albo Shelly Dimmer Gen4 + zasilacz ściemnialny TRIAC (prościej, ale może migotać przy niskiej jasności).'],apple:'Ściemniane światło w Hem.',who:'Elektryk + Ty',unit:'m',wpm:10,def:4,
+    items:p=>[['Taśma LED 24 V COB + profil (m)',p.len,200],hpPsuItem(p.len*10),['Shelly Dimmer 0/1-10V PM Gen4',1,400]],
+    sv:'Indirekt LED-belysning 24 V i nedsänkt tak: 230 V till LED-drivare 24 V med 0-10V placerad åtkomligt, styrkabel 0-10V till dosa för Shelly Dimmer 0/1-10V vid brytaren ({c}).'},
+  winled:{cat:'led',p:'LO',name:'Lampka LED w ościeżnicy okna',what:'Małe światło w górnej części ościeżnicy każdego okna, automatycznie wieczorem.',device:'Profil LED lub mini-spot 24 V w nadprożu. Jeden zasilacz i jeden sterownik na grupę okien.',needs:['Przewód 24 V (2×0,75–1,5 mm²) z każdego okna do zasilacza grupy','Przewód 230 V do zasilacza (elektryk)','Dostęp do zasilacza (rewizja)'],tips:['Grupa = okna, które świecą razem (np. Front, Salon). Każda grupa to jeden kanał sterowania.','Pewna droga do Hem: Shelly Dimmer 0/1-10V Gen4 + zasilacz 0-10V na grupę. Shelly Plus RGBW PM daje 4 kanały z jednego zasilacza (Matter sprawdzimy w aktualnym firmware).','Automatyzacja: zachód słońca → włącz, 23:00 → wyłącz. Działa też jako symulacja obecności podczas wyjazdu.','Tańsza alternatywa: typ „Gniazdo nad oknem” i zwykłe lampy okienne.'],apple:'Jedno światło na grupę w Hem.',who:'Elektryk + Ty',grouped:true,groupLabel:'Grupa (np. Front, Salon)',qtyLabel:'Liczba okien w tym punkcie',def:1,
+    items:p=>[['Lampka lub profil LED 24 V do ościeżnicy',p.qty,250]],
+    groupItems:pts=>{let n=0;pts.forEach(p=>{n+=p.qty;});return[hpPsuItem(n*5),['Shelly Dimmer 0/1-10V PM Gen4',1,400]];},
+    sv:'Fönsterbelysning: kabel 24 V från varje fönsternisch till gemensam LED-drivare per grupp, 230 V till drivaren ({c}).'},
+  cabinet:{cat:'led',p:'LK',name:'LED pod szafkami',what:'Oświetlenie blatu w kuchni.',device:'Profil LED 24 V + zasilacz 0-10V + Shelly Dimmer 0/1-10V Gen4 (albo Shelly 1PM bez ściemniania).',needs:['Przewód 230 V do zasilacza w szafce','Przewód 24 V do profili'],tips:['Zasilacz w szafce, z dostępem.'],apple:'Światło w Hem.',who:'Elektryk + Ty',unit:'m',wpm:8,def:2,
+    items:p=>[['Profil LED 24 V pod szafki (m)',p.len,200],hpPsuItem(p.len*8),['Shelly Dimmer 0/1-10V PM Gen4',1,400]],
+    sv:'230 V till LED-drivare i köksskåp, 24 V till bänkbelysning, dosa för Shelly ({c}).'},
+  night:{cat:'led',p:'LN',name:'LED nocne (cokół, korytarz)',what:'Delikatne światło przy podłodze, włączane ruchem w nocy.',device:'Taśma LED 24 V w cokole lub listwie + zasilacz + Shelly + czujnik ruchu.',needs:['Przewód 230 V do zasilacza','Kanał w cokole lub listwie na taśmę'],tips:['Automatyzacja: ruch między 23 a 6 → 10% jasności na 2 minuty.'],apple:'Światło i czujnik ruchu w Hem.',who:'Elektryk + Ty',unit:'m',wpm:5,def:3,
+    items:p=>[['Taśma LED 24 V (m)',p.len,120],hpPsuItem(p.len*5),['Shelly Dimmer 0/1-10V PM Gen4',1,400],['IKEA MYGGSPRAY (czujnik ruchu)',1,150]],
+    sv:'LED 24 V i sockel eller golvlist, 230 V till drivare, dosa för Shelly ({c}).'},
+
+  winout:{cat:'window',p:'GO',name:'Gniazdo nad oknem (lampa okienna)',what:'Szwedzkie „fönsteruttag”: wkładasz dowolną lampę okienną, a Hem włącza wszystkie naraz.',device:'Gniazdo 230 V przy lub nad oknem; gniazda grupy na jednym obwodzie ze Shelly 1PM Gen4.',needs:['Gniazdo w nadprożu, ościeżnicy lub przy parapecie','Obwód gniazd okiennych przez jedną puszkę ze Shelly'],tips:['Najtańszy sposób na automatyczne lampy w oknach.','Automatyzacja: zachód słońca → włącz, 23:00 → wyłącz.'],apple:'Jedno światło na grupę w Hem.',who:'Elektryk',grouped:true,groupLabel:'Grupa (np. Cały dom)',qtyLabel:'Liczba gniazd w tym punkcie',def:1,
+    items:p=>[['Gniazdo okienne (materiał)',p.qty,150]],
+    groupItems:()=>[['Shelly 1PM Gen4',1,300]],
+    sv:'Fönsteruttag vid eller ovanför fönstren, kopplade till en gemensam grupp styrd av Shelly 1PM ({c}).'},
+  blind:{cat:'window',p:'R',name:'Roleta lub żaluzja z napędem 230 V',what:'Otwieranie i zamykanie z Hem, o zachodzie słońca automatycznie.',device:'Napęd 230 V + Shelly 2PM Gen4 w trybie rolety.',needs:['Przewód do okna (5G1,5)','Puszka na Shelly przy oknie lub włączniku'],tips:['Przed zakupem sprawdzimy, czy tryb rolety Shelly działa w Hem przez Matter.','Cena napędu i rolety zależy od okna; liczę tylko sterownik.'],apple:'Roleta w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 2PM Gen4',1,450]],
+    sv:'Kabel 5G1,5 till fönstret för motoriserad rullgardin eller markis, dosa för Shelly 2PM ({c}).'},
+  blindbat:{cat:'window',p:'RB',name:'Roleta na baterię (bez kabli)',what:'Gdy nie chcesz kłaść kabli do okna.',device:'Rolety IKEA na baterię przez bramkę IKEA DIRIGERA (Matter).',needs:['Nic w ścianie, wystarczy wymiar okna'],tips:['Bramka DIRIGERA jest potrzebna raz na cały dom.'],apple:'Roleta w Hem.',who:'Ty',def:1,
+    items:()=>[['Roleta IKEA z napędem',1,1800]],
+    globalItems:[['IKEA DIRIGERA (bramka)',1,800]]},
+
+  outlet:{cat:'power',p:'G',name:'Gniazdo sterowane',what:'Lampa stojąca, choinka, ekspres: włączane z Hem.',device:'Shelly 1PM Gen4 w głębokiej puszce za gniazdem.',needs:['Głęboka puszka za gniazdem'],tips:['Bez remontu: wtyczka IKEA z Matter do zwykłego gniazda.'],apple:'Gniazdo w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300]],
+    sv:'Djup dosa bakom uttaget för Shelly 1PM ({c}).'},
+  outout:{cat:'power',p:'GZ',name:'Gniazdo zewnętrzne sterowane',what:'Lampki na tarasie, choinka w ogrodzie, pompa.',device:'Gniazdo IP44 z wyłącznikiem różnicowoprądowym, Shelly 1PM Gen4 w puszce wewnątrz.',needs:['Osobny obwód z wyłącznikiem różnicowoprądowym','Puszka na Shelly wewnątrz'],tips:[],apple:'Gniazdo w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300]],
+    sv:'Utomhusuttag IP44 med jordfelsbrytare, styrt via Shelly i dosa inomhus ({c}).'},
+  tv:{cat:'audio',p:'TV',name:'Ściana TV',what:'Miejsce na telewizor i soundbar.',device:'4 gniazda, rura na HDMI, opcjonalnie gniazdo Ethernet.',needs:['4 gniazda 230 V','Rura osłonowa na kabel HDMI do soundbara lub konsoli'],tips:['Soundbar dodaj osobno jako „Głośnik Sonos”.'],apple:'Apple TV i Sonos pojawiają się w Hem.',who:'Elektryk',def:1,
+    items:()=>[],
+    sv:'TV-vägg: 4 uttag, tomrör för HDMI, eventuellt nätverksuttag ({c}).'},
+  ev:{cat:'power',p:'EV',name:'Ładowarka samochodu',what:'Ładowanie auta w garażu.',device:'Ładowarka 11 kW na osobnym obwodzie 3-fazowym 16 A.',needs:['Osobny obwód 3-fazowy 16 A','Wyłącznik różnicowoprądowy typu B lub ładowarka z detekcją DC'],tips:['Ulga grön teknik: 50% na ładowarkę z montażem.'],apple:'Zwykle przez aplikację producenta.',who:'Elektryk',def:1,
+    items:()=>[['Ładowarka z montażem (przed ulgą)',1,20000]],
+    sv:'Separat 3-fasgrupp 16 A till laddbox, jordfelsbrytare typ B eller laddbox med DC-detektering ({c}).'},
+  ipad:{cat:'net',p:'P',name:'Panel iPad w ścianie',what:'Stały ekran z aplikacją Hem, np. w kuchni.',device:'iPad z ekranem LCD w uchwycie ściennym, gniazdo za panelem.',needs:['Gniazdo 230 V za panelem','Wnęka z cyrkulacją powietrza'],tips:['Apple ma podobno wypuścić własny ekran ścienny. Z zakupem iPada można poczekać.'],apple:'Aplikacja Hem na pełnym ekranie.',who:'Elektryk + Ty',def:1,
+    items:()=>[['iPad + uchwyt ścienny',1,6000]],
+    sv:'Uttag bakom väggpanelen för iPad ({c}).'},
+
+  cam:{cat:'security',p:'K',name:'Kamera zewnętrzna (Aqara G5 Pro)',what:'Nagrywanie do iCloud, powiadomienia o osobach i autach.',device:'Aqara Camera Hub G5 Pro (Wi-Fi), HomeKit Secure Video.',needs:['Zasilanie pod okapem: zewnętrzna puszka na zasilacz USB-C 5 V (albo kabel sieciowy dla wersji PoE)'],tips:['Kieruj na własną posesję, nie na ulicę i sąsiadów.','Kamery na baterie nie obsługują HomeKit Secure Video.'],apple:'Kamera z nagraniami w Hem.',who:'Elektryk',def:1,camera:true,
+    items:()=>[['Aqara Camera Hub G5 Pro',1,2300]],
+    sv:'Strömförsörjning under takfoten för kamera, utomhusdosa för 5 V-adapter ({c}).'},
+  camlight:{cat:'security',p:'KL',name:'Kamera z lampą (Eve Outdoor Cam)',what:'Zastępuje lampę zewnętrzną: światło i kamera w jednym.',device:'Eve Outdoor Cam, HomeKit Secure Video, tylko Apple Home.',needs:['Puszka 230 V na elewacji, jak pod lampę'],tips:['Lampa świeci w tym samym kierunku, w którym patrzy kamera.'],apple:'Kamera i światło w Hem.',who:'Elektryk',def:1,camera:true,
+    items:()=>[['Eve Outdoor Cam',1,2600]],
+    sv:'Kopplingsdosa 230 V på fasaden för kamera med inbyggd belysning ({c}).'},
+  bell:{cat:'security',p:'D',name:'Dzwonek z kamerą (Aqara G410)',what:'Widzisz, kto dzwoni, gong w środku.',device:'Aqara Doorbell G410, HomeKit Secure Video.',needs:['Transformator dzwonkowy 12–24 V i przewód do dzwonka (albo baterie AA)'],tips:[],apple:'Dzwonek z obrazem w Hem.',who:'Elektryk',def:1,camera:true,
+    items:()=>[['Aqara Doorbell G410',1,1700]],
+    sv:'Ringklockstransformator 12–24 V och kabel till dörrklockan ({c}).'},
+  lock:{cat:'security',p:'ZM',name:'Zamek inteligentny',what:'Otwieranie drzwi telefonem i automatyczne zamykanie.',device:'Zamek z Matter (np. Aqara, Nuki). Model dobierzemy do Twojej wkładki.',needs:['Wymiary i typ obecnego zamka'],tips:['W szwedzkich drzwiach często są zamki ASSA: przed zakupem sprawdzimy zgodność.'],apple:'Zamek w Hem.',who:'Ty',def:1,
+    items:()=>[['Zamek inteligentny',1,3000]]},
+
+  contact:{cat:'sensor',p:'CD',name:'Czujnik drzwi lub okna',what:'Powiadomienie, gdy coś się otworzy.',device:'IKEA MYGGBETT (Matter przez Thread, na baterię).',needs:['Nic, przyklejasz sam'],tips:[],apple:'Czujnik w Hem.',who:'Ty',def:1,
+    items:()=>[['IKEA MYGGBETT',1,100]]},
+  motion:{cat:'sensor',p:'CR',name:'Czujnik ruchu',what:'Włącza światło, gdy ktoś przechodzi.',device:'IKEA MYGGSPRAY (Matter przez Thread, na baterię).',needs:['Nic, montujesz sam'],tips:[],apple:'Czujnik w Hem.',who:'Ty',def:1,
+    items:()=>[['IKEA MYGGSPRAY',1,150]]},
+  leak:{cat:'sensor',p:'CZ',name:'Czujnik zalania',what:'Alarm i powiadomienie, gdy pojawi się woda.',device:'IKEA KLIPPBOK (Matter przez Thread, na baterię).',needs:['Nic, kładziesz na podłodze'],tips:['Pod zlewem, przy pralce, w kotłowni, w łazience.'],apple:'Czujnik w Hem.',who:'Ty',def:1,
+    items:()=>[['IKEA KLIPPBOK',1,100]]},
+  temp:{cat:'sensor',p:'CT',name:'Czujnik temperatury i wilgotności',what:'Temperatura i wilgotność w pomieszczeniu, wyzwalacz automatyzacji.',device:'Czujnik z Matter (np. Eve, Aqara).',needs:['Nic, stawiasz sam'],tips:[],apple:'Czujnik w Hem.',who:'Ty',def:1,
+    items:()=>[['Czujnik temperatury i wilgotności',1,400]]},
+
+  fan:{cat:'climate',p:'WL',name:'Wentylator łazienkowy',what:'Włącza się sam, gdy rośnie wilgotność.',device:'Shelly 1PM Gen4 + czujnik wilgotności (Matter).',needs:['Puszka na Shelly przy włączniku lub wentylatorze'],tips:['Automatyzacja: wilgotność powyżej 70% → wentylator do spadku.'],apple:'Wentylator i czujnik w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300],['Czujnik temperatury i wilgotności',1,400]],
+    sv:'Dosa för Shelly 1PM till badrumsfläkten ({c}).'},
+  floor:{cat:'climate',p:'OP',name:'Ogrzewanie podłogowe (termostat)',what:'Temperatura podłogi z Hem i harmonogram.',device:'Termostat z czujnikiem podłogi i Matter. Model dobierzemy do Twojego systemu.',needs:['Rurka na czujnik podłogi','Puszka według wymagań producenta'],tips:[],apple:'Termostat w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Termostat z czujnikiem podłogi (Matter)',1,1200]],
+    sv:'Termostat med golvgivare, dosa och givarrör enligt tillverkarens krav ({c}).'},
+
+  hub:{cat:'net',p:'H',name:'HomePod mini 2 (centrum)',what:'Centrum domu: zdalny dostęp, automatyzacje, nagrania kamer, sieć Thread.',device:'HomePod mini 2 (1 895 kr, w sprzedaży od 30.10.2026).',needs:['Gniazdo'],tips:['Postaw centralnie, np. w kuchni.'],apple:'Centrum domu (hemnav).',who:'Ty',def:1,
+    items:()=>[['HomePod mini 2',1,1895]]},
+  atv:{cat:'net',p:'AT',name:'Apple TV 4K',what:'Drugie centrum domu i zapas dla sieci Thread.',device:'Apple TV 4K z gniazdem Ethernet.',needs:['Gniazdo, najlepiej też Ethernet'],tips:['Tylko model z Ethernetem ma Thread.'],apple:'Centrum domu (hemnav).',who:'Ty',def:1,
+    items:()=>[['Apple TV 4K z Ethernetem',1,2200]]},
+  mesh:{cat:'net',p:'WF',name:'Punkt Wi-Fi (mesh)',what:'Zasięg Wi-Fi w całym domu i przy elewacji.',device:'Węzeł systemu mesh.',needs:['Gniazdo','Opcjonalnie kabel sieciowy do routera'],tips:['Na każdym piętrze przynajmniej jeden.'],apple:'Nie pojawia się w Hem.',who:'Ty',def:1,
+    items:()=>[['Węzeł Wi-Fi mesh',1,1200]]},
+  eth:{cat:'net',p:'E',name:'Gniazdo Ethernet',what:'Kabel do telewizora, komputera albo punktu Wi-Fi.',device:'Gniazdo i kabel Cat6 do routera.',needs:['Kabel Cat6 do routera'],tips:['Kable sieciowe możesz położyć sam.'],apple:'Nie pojawia się w Hem.',who:'Ty',def:1,
+    items:()=>[['Gniazdo Ethernet + kabel Cat6',1,150]],
+    sv:'Nätverksuttag Cat6 med kabel till routern ({c}).'},
+
+  spk:{cat:'audio',p:'S',name:'Głośnik w suficie (Sonos Amp)',what:'Niewidoczne głośniki, muzyka ze Spotify i AirPlay.',device:'Głośniki sufitowe (np. Sonos by Sonance) i Sonos Amp na strefę.',needs:['Kabel głośnikowy 2×1,5 mm² do miejsca wzmacniacza','Puszka montażowa w suficie'],tips:['Strefa = pomieszczenie. Każda strefa potrzebuje jednego Sonos Amp.'],apple:'Sonos przez AirPlay w Hem.',who:'Elektryk + Ty',grouped:true,groupLabel:'Strefa (np. Kuchnia)',qtyLabel:'Liczba głośników',def:1,
+    items:p=>[['Głośnik sufitowy',p.qty,3500]],
+    groupItems:()=>[['Sonos Amp',1,9000]],
+    sv:'Högtalarkabel 2×1,5 mm² från takhögtalare till förstärkarens plats, monteringsdosa i taket ({c}).'},
+  sonos:{cat:'audio',p:'SN',name:'Głośnik Sonos',what:'Wolnostojący głośnik albo soundbar.',device:'Sonos Era 100 (ok. 2 800 kr) albo soundbar (ok. 5 500–11 000 kr).',needs:['Gniazdo'],tips:['W Hem przez AirPlay.'],apple:'Głośnik AirPlay w Hem.',who:'Ty',def:1,
+    items:()=>[['Głośnik Sonos',1,3000]]},
+
+  garden:{cat:'garden',p:'OG',name:'Oświetlenie ogrodu',what:'Lampy przy ścieżkach i roślinach, wieczorem automatycznie.',device:'Lampy niskonapięciowe, zasilacz w budynku, Shelly 1PM Gen4.',needs:['Rura osłonowa i kabel ziemny','Zasilacz w budynku'],tips:[],apple:'Światło w Hem.',who:'Elektryk + Ty',def:1,
+    items:()=>[['Shelly 1PM Gen4',1,300],['Zasilacz oświetlenia ogrodu',1,500]],
+    sv:'Tomrör och markkabel till trädgårdsbelysning, matning från dosa inomhus med Shelly ({c}).'},
+  water:{cat:'garden',p:'NW',name:'Nawadnianie',what:'Podlewanie według harmonogramu.',device:'Eve Aqua na kranie zewnętrznym (bez kabli).',needs:['Kran zewnętrzny'],tips:[],apple:'Zawór w Hem.',who:'Ty',def:1,
+    items:()=>[['Eve Aqua',1,1100]]},
+  gate:{cat:'garden',p:'B',name:'Brama garażowa',what:'Otwieranie bramy z Hem i podgląd, czy jest zamknięta.',device:'Shelly 1 Gen4 jako przycisk + czujnik otwarcia.',needs:['Gniazdo w suficie garażu pod napęd','Przewód do sterowania napędem'],tips:[],apple:'Brama w Hem.',who:'Elektryk',def:1,
+    items:()=>[['Shelly 1 Gen4 + czujnik otwarcia',1,400]],
+    sv:'Uttag i garagetaket för portautomatik och kabel till styrningen ({c}).'},
+  conduit:{cat:'garden',p:'RO',name:'Rura osłonowa na zapas',what:'Pusta rura z pilotem na przyszłe kable.',device:'Rura osłonowa z pilotem.',needs:[],tips:['Najtańsze ubezpieczenie na przyszłość.'],apple:'—',who:'Elektryk lub Ty',unit:'m',def:10,
+    items:p=>[['Rura osłonowa z pilotem (m)',p.len,20]],
+    sv:'Tomrör med dragtråd ({c}).'}
+};
+Object.keys(HP_T).forEach(k=>{HP_T[k].id=k;});
+const HP_EXACT_PRICE=new Set(['HomePod mini 2']);
+
+const HP={plan:null,sugg:[],points:[],loaded:false,error:false};
+const HPS={floor:'main',tab:'plan',cats:{},ghosts:true,zoom:false,adding:null,moving:false,sel:null,ghost:null,confirmDel:false,busy:false,lastGroup:{}};
+HP_CATS.forEach(c=>{HPS.cats[c.id]=true;});
+
+function hpNum(v,min,max,def){const n=Number(v);return isFinite(n)&&n>=min&&n<=max?n:def;}
+function hpCat(id){return HP_CATS.find(c=>c.id===id)||HP_CATS[0];}
+function hpPlanOrder(){
+  const p=HP.plan;if(!p)return[];
+  return Array.isArray(p.order)&&p.order.length?p.order.filter(k=>p.floors[k]):Object.keys(p.floors);
+}
+function hpF(key){return HP.plan&&HP.plan.floors[key];}
+function hpInRect(r,x,y){return x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h;}
+function hpInPoly(pts,x,y){
+  let inside=false;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function hpRoomOf(pt){
+  const fl=hpF(pt.floor);
+  if(!fl)return{id:'ext',n:'Elewacja i ogród'};
+  for(const r of fl.rooms){if(r.poly?hpInPoly(r.poly,pt.x,pt.y):hpInRect(r,pt.x,pt.y))return{id:r.id,n:r.n};}
+  for(const o of fl.outside){if(hpInRect(o,pt.x,pt.y))return{id:o.id,n:o.n};}
+  return{id:'ext-'+pt.floor,n:'Elewacja i ogród'};
+}
+function hpFloorName(key){const fl=hpF(key);return fl?fl.name:key;}
+function hpNextCode(type){
+  const p=HP_T[type].p;let max=0;
+  HP.points.forEach(pt=>{
+    if(HP_T[pt.type].p!==p)return;
+    const rest=pt.code.slice(p.length);
+    if(/^\d+$/.test(rest))max=Math.max(max,parseInt(rest,10));
+  });
+  return p+(max+1);
+}
+function hpShoppingList(){
+  const lines={},order=[];
+  const put=it=>{
+    if(!it||!(it[1]>0))return;
+    const key=it[0]+'|'+it[2];
+    if(!lines[key]){lines[key]={name:it[0],qty:0,price:it[2]};order.push(key);}
+    lines[key].qty+=it[1];
+  };
+  const groups={},globals={};
+  HP.points.forEach(p=>{
+    const t=HP_T[p.type];
+    t.items(p).forEach(put);
+    if(t.groupItems){const g=p.type+'|'+(p.group||'—');(groups[g]=groups[g]||{type:p.type,pts:[]}).pts.push(p);}
+    if(t.globalItems)globals[p.type]=t.globalItems;
+  });
+  Object.keys(groups).forEach(g=>{HP_T[groups[g].type].groupItems(groups[g].pts).forEach(put);});
+  Object.keys(globals).forEach(k=>{globals[k].forEach(put);});
+  return order.map(k=>lines[k]);
+}
+function hpCamerasCount(){return HP.points.filter(p=>HP_T[p.type].camera).length;}
+function hpPointHints(p){
+  const t=HP_T[p.type],out=[];
+  if(t.unit==='m'&&t.wpm){
+    const w=Math.round(p.len*t.wpm),s=hpPsuFor(p.len*t.wpm);
+    out.push('Moc ok. '+w+' W → zasilacz '+s.w+' W'+(s.count>1?' × '+s.count:'')+' (z zapasem 25%).');
+    if(p.len>5)out.push('Taśma dłuższa niż 5 m: zasil ją z obu końców albo co 5 m, inaczej koniec będzie ciemniejszy.');
+    if(p.len>15)out.push('Przy tej długości podziel linię na dwa odcinki z osobnymi zasilaczami.');
+  }
+  if(t.grouped){
+    const same=HP.points.filter(q=>q.type===p.type&&(q.group||'—')===(p.group||'—'));
+    let cnt=0;same.forEach(q=>{cnt+=q.qty;});
+    out.push('Grupa „'+(p.group||'—')+'”: '+same.length+' punkt(y), razem '+cnt+(p.type==='spk'?' głośnik(i).':' szt.')+' Wszystkie sterowane razem.');
+  }
+  if(p.type==='lamp'&&p.qty>=2)out.push('Dwa obwody w jednej puszce: wystarczy jeden Shelly 2PM Gen4.');
+  return out;
+}
+function hpGlobalHints(){
+  const h=[],pts=HP.points;
+  if(!pts.length){h.push('Zacznij od „+ Dodaj punkt” albo dotknij przerywanej podpowiedzi na rzucie i wybierz „Dodaj do planu”.');return h;}
+  const has=t=>pts.some(p=>p.type===t);
+  if(!has('hub')&&!has('atv'))h.push('Brakuje centrum domu (HomePod mini 2 lub Apple TV). Bez niego nie działają automatyzacje, dostęp spoza domu ani nagrania kamer.');
+  let shelly=0;hpShoppingList().forEach(l=>{if(/^Shelly/.test(l.name))shelly+=l.qty;});
+  if(shelly)h.push('Masz '+shelly+' modułów Shelly. Zanim elektryk zamknie puszki, zrób zdjęcie kodu Matter każdego modułu i podpisz, gdzie jest.');
+  const cams=hpCamerasCount();
+  if(cams)h.push('Kamery i dzwonek: '+cams+'. Plan iCloud+ '+(cams<=1?'50 GB':cams<=5?'200 GB':'2 TB')+' obejmie nagrywanie'+(cams>5?' (200 GB obsługuje tylko do 5 kamer).':'.'));
+  ['winled','winout'].forEach(k=>{
+    const g={};pts.forEach(p=>{if(p.type===k)g[p.group||'—']=(g[p.group||'—']||0)+p.qty;});
+    const names=Object.keys(g);
+    if(names.length)h.push(HP_T[k].name+': '+names.length+' grup(y) ('+names.map(x=>x+': '+g[x]).join(', ')+'). Każda grupa to jeden sterownik'+(k==='winled'?' i jeden zasilacz.':'.'));
+  });
+  if(pts.some(p=>HP_T[p.type].unit==='m'&&HP_T[p.type].wpm))h.push('LED 24 V: zasilacze montuj w miejscach z dostępem (rewizja). Elektryk podłącza 230 V do zasilacza; ustal z nim, kto kładzie przewody 24 V.');
+  const withWifi={},used={};
+  pts.forEach(p=>{used[p.floor]=true;if(p.type==='mesh')withWifi[p.floor]=true;});
+  Object.keys(used).forEach(f=>{if(!withWifi[f])h.push(hpFloorName(f)+': nie ma punktu Wi-Fi. Shelly i kamery potrzebują dobrego zasięgu.');});
+  const zones={};pts.forEach(p=>{if(p.type==='spk')zones[p.group||'—']=1;});
+  if(Object.keys(zones).length)h.push('Głośniki w suficie: '+Object.keys(zones).length+' stref(y), czyli tyle samo wzmacniaczy Sonos Amp. Zaplanuj dla nich miejsce z wentylacją.');
+  if(pts.some(p=>{const r=hpRoomOf(p).id;return r.indexOf('ext')===0||r==='taras';}))h.push('Na zewnątrz: osprzęt IP44 lub wyżej, kable w rurach osłonowych.');
+  return h;
+}
+function hpGhostVisible(g){
+  if(!HPS.ghosts||g.f!==HPS.floor||!HPS.cats[HP_T[g.type].cat])return false;
+  return!HP.points.some(p=>p.floor===g.f&&p.type===g.type&&Math.abs(p.x-g.x)<1&&Math.abs(p.y-g.y)<1);
+}
+function hpTypePrice(t){
+  const p0={qty:1,len:t.unit==='m'?t.def:0,group:''};
+  return[...t.items(p0),...(t.groupItems?t.groupItems([p0]):[]),...(t.globalItems||[])].reduce((a,it)=>a+it[1]*it[2],0);
+}
+function hpLedMeters(){return HP.points.reduce((a,p)=>a+(HP_T[p.type].unit==='m'&&HP_T[p.type].wpm?p.len:0),0);}
+function hpElectricianText(){
+  const lines=[];
+  Object.keys(HP_T).forEach(k=>{
+    const t=HP_T[k];if(!t.sv)return;
+    const codes=HP.points.filter(p=>p.type===k).map(p=>p.code).sort((a,b)=>a.localeCompare(b,'sv',{numeric:true}));
+    if(codes.length)lines.push('- '+t.sv.replace('{c}',codes.join(', ')));
+  });
+  if(!lines.length)return'';
+  lines.push('- Överspänningsskydd i elcentralen.');
+  return lines.join('\n');
+}
+
+/* ---- dane ---- */
+function hpValidPlan(d){
+  if(!d||typeof d!=='object'||!Array.isArray(d.viewBox)||d.viewBox.length!==4||!d.viewBox.every(v=>isFinite(Number(v))))return null;
+  if(!d.floors||typeof d.floors!=='object')return null;
+  const arr=v=>Array.isArray(v)?v:[];
+  const rect=r=>r&&typeof r==='object'&&['x','y','w','h'].every(k=>isFinite(Number(r[k])));
+  const poly=p=>Array.isArray(p)&&p.length>2&&p.every(q=>Array.isArray(q)&&q.length===2&&q.every(v=>isFinite(Number(v))));
+  const floors={};
+  Object.keys(d.floors).forEach(k=>{
+    const f=d.floors[k];if(!f||typeof f!=='object'||!/^[a-z0-9_-]{1,20}$/.test(k))return;
+    floors[k]={name:String(f.name||k),
+      rooms:arr(f.rooms).filter(r=>r&&(poly(r.poly)||rect(r))).map(r=>({...r,id:String(r.id||''),n:String(r.n||'')})),
+      outside:arr(f.outside).filter(rect).map(r=>({...r,id:String(r.id||''),n:String(r.n||'')})),
+      fixtures:arr(f.fixtures).filter(rect),stairs:arr(f.stairs).filter(rect),
+      windows:arr(f.windows).filter(w=>w&&['at','a','b'].every(k2=>isFinite(Number(w[k2])))),
+      gates:arr(f.gates).filter(g=>g&&['x1','x2','y'].every(k2=>isFinite(Number(g[k2]))))};
+  });
+  if(!Object.keys(floors).length)return null;
+  return{viewBox:d.viewBox.map(Number),order:arr(d.order).map(String),outline:poly(d.outline)?d.outline:[],floors};
+}
+function hpFromRow(r){
+  if(!r||!HP_T[r.type])return null;
+  const x=Number(r.x),y=Number(r.y);
+  if(!isFinite(x)||!isFinite(y)||typeof r.floor!=='string')return null;
+  return{id:String(r.id),type:r.type,floor:r.floor,x,y,code:String(r.code||''),note:String(r.note||'').slice(0,300),
+    qty:Math.round(hpNum(r.qty,1,999,1)),len:hpNum(r.len,0,200,0),group:String(r.grp||'').slice(0,40)};
+}
+async function openPlan(){
+  document.getElementById('hp-ov').classList.add('open');
+  hpRender();
+  if(!HP.loaded)await hpLoad();
+}
+function closePlan(){
+  document.getElementById('hp-ov').classList.remove('open');
+  HPS.adding=null;HPS.moving=false;hpClosePanel();
+}
+async function hpLoad(){
+  const[c,p]=await Promise.all([
+    sb.from('house_plan_config').select('key,data'),
+    sb.from('house_plan_points').select('*').order('created_at')
+  ]);
+  if(c.error||p.error){HP.error=true;showToast('Błąd wczytywania planu domu','err');hpRender();return;}
+  const cfg={};(c.data||[]).forEach(r=>{cfg[r.key]=r.data;});
+  HP.plan=hpValidPlan(cfg.floorplan);
+  HP.sugg=(Array.isArray(cfg.suggestions)?cfg.suggestions:[]).filter(s=>s&&HP_T[s.type]&&HP.plan&&HP.plan.floors[s.f]&&isFinite(Number(s.x))&&isFinite(Number(s.y)))
+    .map(s=>({f:s.f,type:s.type,x:Number(s.x),y:Number(s.y),why:String(s.why||''),group:String(s.group||'').slice(0,40)}));
+  HP.points=(p.data||[]).map(hpFromRow).filter(Boolean);
+  HP.loaded=true;HP.error=false;
+  const order=hpPlanOrder();
+  if(order.length&&!hpF(HPS.floor))HPS.floor=order[0];
+  hpRender();
+}
+
+/* ---- widok ---- */
+function hpPriceLabel(name,v){return(HP_EXACT_PRICE.has(name)?'':'ok. ')+money(v);}
+function hpQtyFmt(n){return Number(n).toLocaleString('pl-PL',{maximumFractionDigits:2});}
+function hpRender(){
+  const body=document.getElementById('hpBody');if(!body)return;
+  const ov=document.getElementById('hp-ov');
+  const st=body.scrollTop,mw=document.querySelector('#hpBody .hp-mapwrap'),ml=mw?mw.scrollLeft:0,mt=mw?mw.scrollTop:0;
+  const shop=hpShoppingList(),total=shop.reduce((a,l)=>a+l.qty*l.price,0);
+  document.getElementById('hpSub').textContent=HP.loaded&&HP.plan?plPl(HP.points.length,'punkt','punkty','punktów')+' · ok. '+money(total):'Instalacje smart home';
+  document.getElementById('hpAdd').style.display=HP.loaded&&HP.plan&&HPS.tab==='plan'&&!HPS.adding&&!HPS.moving?'':'none';
+  ov.classList.toggle('panel',!!(HPS.sel||HPS.ghost!==null));
+  if(!HP.loaded){body.innerHTML=HP.error?`<div class="ix-empty">Nie udało się wczytać planu.<br><button class="hp-cat-add" onclick="hpLoad()">${ic('refresh-cw',14)} Spróbuj ponownie</button></div>`:'<div class="loadwrap"><div class="spinner"></div>Wczytywanie planu…</div>';lucide.createIcons({rootElement:body});return;}
+  if(!HP.plan){body.innerHTML='<div class="ix-empty"><div class="big">🏠</div>Brak rzutu domu dla tego konta.</div>';return;}
+  let shelly=0;shop.forEach(l=>{if(/^Shelly/.test(l.name))shelly+=l.qty;});
+  let h=`<div class="hp-kpis">
+    <div class="hp-kpi wide"><div class="l">Orientacyjny koszt urządzeń</div><div class="v">ok. ${money(total)}</div></div>
+    <div class="hp-kpi"><div class="v">${HP.points.length}</div><div class="l">Punkty</div></div>
+    <div class="hp-kpi"><div class="v">${shelly}</div><div class="l">Moduły Shelly</div></div>
+    <div class="hp-kpi"><div class="v">${hpQtyFmt(hpLedMeters())} m</div><div class="l">LED 24 V</div></div>
+    <div class="hp-kpi"><div class="v">${hpCamerasCount()}</div><div class="l">Kamery i dzwonki</div></div></div>
+    <div class="filterbar">${[['plan','Rzut'],['shop','Lista zakupów'],['rooms','Pokój po pokoju'],['sv','Till elektrikern'],['cat','Co możesz zrobić']]
+      .map(([k,l])=>`<button class="${HPS.tab===k?'on':''}" onclick="hpSetTab('${k}')">${l}</button>`).join('')}</div>`;
+  if(HPS.tab==='plan')h+=hpPlanTab();
+  else if(HPS.tab==='shop')h+=hpShopTab(shop,total);
+  else if(HPS.tab==='rooms')h+=hpRoomsTab();
+  else if(HPS.tab==='sv')h+=hpSvTab();
+  else h+=hpCatalogTab();
+  body.innerHTML=h;
+  lucide.createIcons({rootElement:body});
+  body.scrollTop=st;
+  const mw2=document.querySelector('#hpBody .hp-mapwrap');if(mw2){mw2.scrollLeft=ml;mw2.scrollTop=mt;}
+}
+function hpSetTab(t){HPS.tab=t;HPS.adding=null;HPS.moving=false;hpClosePanel(true);hpRender();document.getElementById('hpBody').scrollTop=0;}
+function hpPlanTab(){
+  let h='';
+  if(HPS.adding)h+=`<div class="hp-banner">${ic('crosshair',16)}<span>Dodajesz: ${esc(HP_T[HPS.adding].name)}. Dotknij rzutu, aby postawić punkt.</span><button onclick="hpStopAdd()">Gotowe</button></div>`;
+  if(HPS.moving){const p=HP.points.find(x=>x.id===HPS.sel);h+=`<div class="hp-banner">${ic('move',16)}<span>Dotknij nowego miejsca dla ${esc(p?p.code:'')}.</span><button onclick="hpCancelMove()">Anuluj</button></div>`;}
+  const order=hpPlanOrder();
+  h+=`<div class="hp-tools">${order.length>1?`<div class="seg">${order.map(k=>`<button class="${HPS.floor===k?'on':''}" onclick="hpSetFloor('${esc(k)}')">${esc(hpFloorName(k))}</button>`).join('')}</div>`:''}
+    <button class="hp-tbtn${HPS.zoom?' on':''}" onclick="HPS.zoom=!HPS.zoom;hpRender()" aria-pressed="${HPS.zoom}">${ic(HPS.zoom?'zoom-out':'zoom-in',15)}${HPS.zoom?'Pomniejsz':'Powiększ'}</button>
+    <button class="hp-tbtn${HPS.ghosts?' on':''}" onclick="HPS.ghosts=!HPS.ghosts;if(!HPS.ghosts&&HPS.ghost!==null)hpClosePanel(true);hpRender()" aria-pressed="${HPS.ghosts}">${ic('sparkles',15)}Podpowiedzi</button></div>
+    <div class="hp-chips">${HP_CATS.map(c=>`<button class="hp-chip${HPS.cats[c.id]?'':' off'}" onclick="hpToggleCat('${c.id}')" aria-pressed="${!!HPS.cats[c.id]}"><i style="background:var(${c.css})"></i>${esc(c.name)}</button>`).join('')}</div>
+    <div class="hp-mapwrap${HPS.zoom?' zoom':''}${HPS.adding||HPS.moving?' pick':''}">${hpSvg()}</div>
+    <div class="hp-card"><div class="hp-h3">${ic('lightbulb',13)}Podpowiedzi do planu</div>${hpGlobalHints().map(x=>`<div class="hp-hint">${ic('info',15)}<span>${esc(x)}</span></div>`).join('')}</div>`;
+  return h;
+}
+function hpN(v){const n=Number(v);return isFinite(n)?Math.round(n*1000)/1000:0;}
+function hpText(x,y,str,size,rot,cls){
+  return`<text class="${cls||'hp-l'}" x="${hpN(x)}" y="${hpN(y)}" font-size="${size}"${rot?` transform="rotate(-90 ${hpN(x)} ${hpN(y)})"`:''}>${esc(str)}</text>`;
+}
+function hpSvg(){
+  const P=HP.plan,fl=hpF(HPS.floor);if(!fl)return'';
+  const[vx,vy,vw,vh]=P.viewBox;
+  let s=`<svg class="hp-map" id="hpSvg" viewBox="${hpN(vx)} ${hpN(vy)} ${hpN(vw)} ${hpN(vh)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rzut: ${esc(fl.name)}" onclick="hpMapClick(event)">`;
+  if(P.outline.length)s+=`<polygon class="hp-o" points="${P.outline.map(q=>hpN(q[0])+','+hpN(q[1])).join(' ')}"/>`;
+  fl.outside.forEach(o=>{
+    s+=`<rect class="hp-z" x="${hpN(o.x)}" y="${hpN(o.y)}" width="${hpN(o.w)}" height="${hpN(o.h)}"/>`;
+    if(o.n)s+=hpText(+o.x+ +o.w/2,+o.y+ +o.h/2,o.n,0.36,!!o.rot);
+  });
+  fl.fixtures.forEach(f=>{
+    s+=`<rect class="hp-f" x="${hpN(f.x)}" y="${hpN(f.y)}" width="${hpN(f.w)}" height="${hpN(f.h)}"/>`;
+    if(f.label)s+=hpText(isFinite(+f.lx)?f.lx:+f.x+ +f.w/2,isFinite(+f.ly)?f.ly:+f.y+ +f.h/2,f.label,0.28,false);
+  });
+  fl.rooms.forEach(r=>{
+    s+=r.poly?`<polygon class="hp-r" points="${r.poly.map(q=>hpN(q[0])+','+hpN(q[1])).join(' ')}"/>`
+      :`<rect class="hp-r" x="${hpN(r.x)}" y="${hpN(r.y)}" width="${hpN(r.w)}" height="${hpN(r.h)}"/>`;
+  });
+  fl.stairs.forEach(st=>{
+    const n=Math.max(1,Math.min(40,Math.round(hpNum(st.n,1,40,8))));
+    s+=`<rect class="hp-st" x="${hpN(st.x)}" y="${hpN(st.y)}" width="${hpN(st.w)}" height="${hpN(st.h)}"/>`;
+    for(let i=1;i<n;i++){
+      if(+st.w>=+st.h){const x=+st.x+ +st.w*i/n;s+=`<line class="hp-st" x1="${hpN(x)}" y1="${hpN(st.y)}" x2="${hpN(x)}" y2="${hpN(+st.y+ +st.h)}"/>`;}
+      else{const y=+st.y+ +st.h*i/n;s+=`<line class="hp-st" x1="${hpN(st.x)}" y1="${hpN(y)}" x2="${hpN(+st.x+ +st.w)}" y2="${hpN(y)}"/>`;}
+    }
+  });
+  fl.windows.forEach(w=>{
+    s+=w.v?`<line class="hp-w" x1="${hpN(w.at)}" y1="${hpN(w.a)}" x2="${hpN(w.at)}" y2="${hpN(w.b)}"/>`
+      :`<line class="hp-w" x1="${hpN(w.a)}" y1="${hpN(w.at)}" x2="${hpN(w.b)}" y2="${hpN(w.at)}"/>`;
+  });
+  fl.gates.forEach(g=>{
+    s+=`<line class="hp-g" x1="${hpN(g.x1)}" y1="${hpN(g.y)}" x2="${hpN(g.x2)}" y2="${hpN(g.y)}"/>`;
+    if(g.label)s+=hpText((+g.x1+ +g.x2)/2,+g.y-0.3,g.label,0.26,false);
+  });
+  fl.rooms.forEach(r=>{
+    const label=r.label!==undefined?String(r.label):r.n;if(!label)return;
+    const lx=isFinite(+r.lx)?+r.lx:(r.poly?r.poly[0][0]:+r.x+ +r.w/2),ly=isFinite(+r.ly)?+r.ly:(r.poly?r.poly[0][1]:+r.y+ +r.h/2);
+    s+=hpText(lx,ly,label,r.sm?0.28:0.36,!!r.rot);
+  });
+  const sx=vx+0.4,sy=vy+vh-0.45;
+  s+=`<line class="hp-sc" x1="${hpN(sx)}" y1="${hpN(sy)}" x2="${hpN(sx+5)}" y2="${hpN(sy)}"/><line class="hp-sc" x1="${hpN(sx)}" y1="${hpN(sy-0.15)}" x2="${hpN(sx)}" y2="${hpN(sy+0.15)}"/><line class="hp-sc" x1="${hpN(sx+5)}" y1="${hpN(sy-0.15)}" x2="${hpN(sx+5)}" y2="${hpN(sy+0.15)}"/>`;
+  s+=`<text class="hp-sct" x="${hpN(sx+2.5)}" y="${hpN(sy-0.22)}" font-size="0.3">5 m</text>`;
+  HP.sugg.forEach((g,i)=>{
+    if(!hpGhostVisible(g))return;
+    const t=HP_T[g.type],c=hpCat(t.cat);
+    s+=`<g class="hp-gh${HPS.ghost===i?' sel':''}" data-gi="${i}"><circle class="hp-hit" cx="${hpN(g.x)}" cy="${hpN(g.y)}" r="0.6"/>
+      <circle class="m" cx="${hpN(g.x)}" cy="${hpN(g.y)}" r="0.32" style="stroke:var(${c.css})"/>
+      <text x="${hpN(g.x)}" y="${hpN(g.y)}" font-size="${t.p.length>1?0.22:0.28}" style="fill:var(${c.css})">${esc(t.p)}</text></g>`;
+  });
+  HP.points.forEach(p=>{
+    if(p.floor!==HPS.floor||!HPS.cats[HP_T[p.type].cat])return;
+    const c=hpCat(HP_T[p.type].cat),fs=p.code.length<=2?0.3:p.code.length===3?0.25:0.2;
+    s+=`<g class="hp-pt${HPS.sel===p.id?' sel':''}" data-pid="${esc(p.id)}"><circle class="hp-hit" cx="${hpN(p.x)}" cy="${hpN(p.y)}" r="0.6"/>
+      <circle class="m" cx="${hpN(p.x)}" cy="${hpN(p.y)}" r="0.36" style="fill:var(${c.css})"/>
+      <text x="${hpN(p.x)}" y="${hpN(p.y)}" font-size="${fs}">${esc(p.code)}</text></g>`;
+  });
+  return s+'</svg>';
+}
+function hpShopTab(shop,total){
+  if(!shop.length)return`<div class="hp-card"><div class="ix-empty">Lista zakupów powstanie z punktów na rzucie.</div></div>`;
+  return`<div class="hp-card"><div class="hp-h3">${ic('shopping-cart',13)}Lista zakupów</div><div class="hp-tblwrap"><table class="hp-tbl">
+    <thead><tr><th>Produkt</th><th class="n">Ilość</th><th class="n">Cena</th><th class="n">Razem</th></tr></thead>
+    <tbody>${shop.map(l=>`<tr><td>${esc(l.name)}</td><td class="n">${hpQtyFmt(l.qty)}</td><td class="n">${hpPriceLabel(l.name,l.price)}</td><td class="n">${hpPriceLabel(l.name,l.qty*l.price)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="3">Razem</td><td class="n">ok. ${money(total)}</td></tr></tfoot></table></div>
+    <div class="hp-note">Ceny orientacyjne („ok.”), bez robocizny elektryka. Ulga ROT 30% liczy się od robocizny, grön teknik 50% od ładowarki z montażem.</div></div>`;
+}
+function hpRoomsTab(){
+  if(!HP.points.length)return`<div class="hp-card"><div class="ix-empty">Dodaj punkty na rzucie, a tu zobaczysz je pokój po pokoju.</div></div>`;
+  let h='';
+  hpPlanOrder().forEach(fk=>{
+    const fl=hpF(fk),pts=HP.points.filter(p=>p.floor===fk);if(!pts.length)return;
+    const groups={},order=[];
+    pts.forEach(p=>{const r=hpRoomOf(p);if(!groups[r.id]){groups[r.id]={n:r.n,pts:[]};order.push(r.id);}groups[r.id].pts.push(p);});
+    const ids=[...fl.rooms.map(r=>r.id),...fl.outside.map(o=>o.id)];
+    order.sort((a,b)=>{const ia=ids.indexOf(a),ib=ids.indexOf(b);return(ia<0?999:ia)-(ib<0?999:ib);});
+    h+=`<div class="hp-floorh">${esc(fl.name)}</div>`;
+    order.forEach(id=>{
+      const g=groups[id];
+      h+=`<div class="hp-card"><div class="hp-h3">${esc(g.n)}<span style="margin-left:auto">${g.pts.length}</span></div>${g.pts.sort((a,b)=>a.code.localeCompare(b.code,'pl',{numeric:true})).map(p=>{
+        const t=HP_T[p.type],c=hpCat(t.cat);
+        return`<div class="hp-li" onclick="hpGoto('${esc(p.id)}')"><span class="hp-dot" style="background:var(${c.css})">${esc(p.code)}</span>
+          <div class="hp-li-b"><div class="hp-li-t">${esc(t.name)}</div><div class="hp-li-s">${esc(p.note||[t.unit==='m'?hpQtyFmt(p.len)+' m':'',t.grouped&&p.group?p.group:''].filter(Boolean).join(' · ')||c.name)}</div></div>${ic('chevron-right',16)}</div>`;
+      }).join('')}</div>`;
+    });
+  });
+  return h;
+}
+function hpSvTab(){
+  const txt=hpElectricianText();
+  if(!txt)return`<div class="hp-card"><div class="ix-empty">Dodaj punkty, a tu powstanie tekst po szwedzku dla elektryka.</div></div>`;
+  return`<div class="hp-card"><div class="hp-h3">${ic('send',13)}Till elektrikern</div>
+    <textarea class="hp-sv" id="hpSvText" readonly>${esc(txt)}</textarea>
+    <button class="hp-copy" onclick="hpCopySv()">${ic('copy',16)} Kopiuj tekst</button></div>`;
+}
+function hpCopySv(){
+  const ta=document.getElementById('hpSvText');if(!ta)return;
+  const sel=()=>{ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);showToast('Tekst zaznaczony — skopiuj go ręcznie');};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ta.value).then(()=>showToast('Skopiowano tekst dla elektryka','ok'),sel);
+  else sel();
+}
+function hpCatalogTab(){
+  return HP_CATS.map(c=>{
+    const types=Object.keys(HP_T).filter(k=>HP_T[k].cat===c.id);if(!types.length)return'';
+    return`<div class="hp-card"><div class="hp-h3"><span class="hp-dot" style="width:10px;height:10px;background:var(${c.css})"></span>${esc(c.name)}</div>${types.map(k=>{
+      const t=HP_T[k],pr=hpTypePrice(t);
+      return`<div class="hp-cat-i"><div class="hp-cat-t"><b>${esc(t.name)}</b><span>${pr?(t.items({qty:1,len:0,group:''}).every(it=>HP_EXACT_PRICE.has(it[0]))?'':'ok. ')+money(pr):'—'}</span></div>
+        <div class="hp-cat-d">${esc(t.what)}</div><div class="hp-cat-d"><strong style="color:var(--ink)">Rekomendacja:</strong> ${esc(t.device)}</div>
+        <button class="hp-cat-add" onclick="hpStartAdd('${k}')">${ic('plus',14)} Dodaj na plan</button></div>`;
+    }).join('')}</div>`;
+  }).join('');
+}
+
+/* ---- interakcje ---- */
+function hpSetFloor(k){if(!hpF(k))return;HPS.floor=k;if(!HPS.moving)hpClosePanel(true);hpRender();}
+function hpToggleCat(id){HPS.cats[id]=!HPS.cats[id];const p=HP.points.find(x=>x.id===HPS.sel);if(p&&!HPS.cats[HP_T[p.type].cat])hpClosePanel(true);hpRender();}
+function hpPickType(){
+  setSheet(`<h2>Dodaj punkt</h2><div class="field"><input id="hpTypeQ" placeholder="Szukaj, np. LED, kamera, gniazdo…" autocomplete="off" oninput="hpTypeList()"></div><div id="hpTypeList"></div>`);
+  hpTypeList();
+}
+function hpTypeList(){
+  const q=(document.getElementById('hpTypeQ')?.value||'').trim().toLowerCase();
+  const box=document.getElementById('hpTypeList');if(!box)return;
+  let h='';
+  HP_CATS.forEach(c=>{
+    const types=Object.keys(HP_T).filter(k=>{const t=HP_T[k];return t.cat===c.id&&(!q||(t.name+' '+t.what+' '+t.device+' '+c.name).toLowerCase().includes(q));});
+    if(!types.length)return;
+    h+=`<div class="hp-typecat">${esc(c.name)}</div>`+types.map(k=>{const t=HP_T[k];
+      return`<button class="hp-type" onclick="hpStartAdd('${k}')"><span class="hp-dot" style="background:var(${c.css})">${esc(t.p)}</span><span><b>${esc(t.name)}</b><small>${esc(t.what)}</small></span></button>`;}).join('');
+  });
+  box.innerHTML=h||'<div class="ix-empty">Nic nie pasuje do wyszukiwania.</div>';
+}
+function hpStartAdd(type){
+  if(!HP_T[type])return;
+  closeModal();
+  HPS.tab='plan';HPS.adding=type;HPS.moving=false;HPS.cats[HP_T[type].cat]=true;
+  hpClosePanel(true);hpRender();
+  document.getElementById('hpBody').scrollTop=0;
+}
+function hpStopAdd(){HPS.adding=null;hpRender();}
+function hpSvgPoint(svg,e){
+  const m=svg.getScreenCTM();if(!m)return null;
+  const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;
+  const q=p.matrixTransform(m.inverse());
+  const r=v=>Math.max(-50,Math.min(50,Math.round(Math.round(v/0.05)*0.05*100)/100));
+  return{x:r(q.x),y:r(q.y)};
+}
+function hpMapClick(e){
+  const svg=document.getElementById('hpSvg');if(!svg)return;
+  if(HPS.adding||HPS.moving){
+    const pt=hpSvgPoint(svg,e);if(!pt)return;
+    if(HPS.adding)hpAddPoint(HPS.adding,HPS.floor,pt.x,pt.y,HP_T[HPS.adding].grouped?(HPS.lastGroup[HPS.adding]||''):'');
+    else hpMovePoint(pt.x,pt.y);
+    return;
+  }
+  const g=e.target.closest('[data-pid],[data-gi]');
+  if(!g){if(HPS.sel||HPS.ghost!==null)hpClosePanel();return;}
+  if(g.dataset.pid)hpSelect(g.dataset.pid);else hpSelectGhost(Number(g.dataset.gi));
+}
+async function hpAddPoint(type,floor,x,y,group){
+  const t=HP_T[type];if(!t||HPS.busy)return null;
+  HPS.busy=true;
+  const row={user_id:USER.id,type,floor,x,y,code:hpNextCode(type),qty:1,len:t.unit==='m'?t.def:0,grp:String(group||'').slice(0,40)};
+  const{data,error}=await sb.from('house_plan_points').insert(row).select().single();
+  HPS.busy=false;
+  if(error){showToast('Błąd zapisu punktu','err');return null;}
+  const p=hpFromRow(data);if(!p)return null;
+  HP.points.push(p);hpRender();showToast('Dodano '+p.code+' · '+t.name,'ok');
+  return p;
+}
+async function hpMovePoint(x,y){
+  const p=HP.points.find(q=>q.id===HPS.sel);if(!p||HPS.busy)return;
+  HPS.busy=true;
+  const{error}=await sb.from('house_plan_points').update({x,y,floor:HPS.floor}).eq('id',p.id);
+  HPS.busy=false;
+  if(error){showToast('Błąd zapisu','err');return;}
+  p.x=x;p.y=y;p.floor=HPS.floor;HPS.moving=false;
+  showToast('Przeniesiono '+p.code,'ok');hpSelect(p.id);
+}
+function hpStartMove(){HPS.moving=true;HPS.adding=null;document.getElementById('hpPanel').classList.remove('open');document.getElementById('hp-ov').classList.remove('panel');hpRender();}
+function hpCancelMove(){HPS.moving=false;if(HPS.sel)hpSelect(HPS.sel);else hpRender();}
+function hpSelect(id){
+  const p=HP.points.find(q=>q.id===id);if(!p)return;
+  HPS.sel=id;HPS.ghost=null;HPS.confirmDel=false;
+  if(p.floor!==HPS.floor)HPS.floor=p.floor;
+  hpRender();hpRenderPanel();hpRevealMarker('[data-pid="'+id+'"]');
+}
+function hpSelectGhost(i){
+  if(!HP.sugg[i])return;
+  HPS.ghost=i;HPS.sel=null;HPS.confirmDel=false;
+  hpRender();hpRenderPanel();hpRevealMarker('[data-gi="'+i+'"]');
+}
+function hpRevealMarker(sel){
+  const el=document.querySelector('#hpSvg '+sel),body=document.getElementById('hpBody');if(!el||!body)return;
+  if(window.innerWidth>=900)return;
+  const r=el.getBoundingClientRect(),limit=window.innerHeight*0.33;
+  if(r.top>limit||r.top<90)body.scrollBy({top:r.top-limit*0.6,behavior:'smooth'});
+}
+function hpGoto(id){
+  const p=HP.points.find(q=>q.id===id);if(!p)return;
+  HPS.tab='plan';HPS.cats[HP_T[p.type].cat]=true;HPS.adding=null;HPS.moving=false;
+  hpSelect(id);
+}
+function hpClosePanel(silent){
+  HPS.sel=null;HPS.ghost=null;HPS.confirmDel=false;
+  const pn=document.getElementById('hpPanel');if(pn)pn.classList.remove('open');
+  document.getElementById('hp-ov')?.classList.remove('panel');
+  if(!silent)hpRender();
+}
+function hpSec(title,content){return content?`<div class="hp-sec"><h4>${title}</h4>${content}</div>`:'';}
+function hpList(a){return a&&a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';}
+function hpCatalogSecs(t){
+  return hpSec('Do czego',t.what?`<p>${esc(t.what)}</p>`:'')+hpSec('Rekomendacja',`<p>${esc(t.device)}</p>`)+hpSec('Co przygotować',hpList(t.needs))
+    +hpSec('Wskazówki',hpList(t.tips))+hpSec('W aplikacji Hem',`<p>${esc(t.apple)}</p>`)+hpSec('Kto montuje',`<p>${esc(t.who)}</p>`);
+}
+function hpRenderPanel(){
+  const pn=document.getElementById('hpPanel');if(!pn)return;
+  if(HPS.ghost!==null){
+    const g=HP.sugg[HPS.ghost];if(!g){hpClosePanel();return;}
+    const t=HP_T[g.type],c=hpCat(t.cat);
+    pn.innerHTML=`<button class="sheet-xbtn" onclick="hpClosePanel()" aria-label="Zamknij">✕</button>
+      <div class="hp-ph"><span class="hp-dot gh" style="color:var(${c.css})">${esc(t.p)}</span><div><div class="hp-ph-t">Podpowiedź: ${esc(t.name)}</div>
+      <div class="hp-ph-s">${esc(c.name)} · ${esc(hpFloorName(g.f))} · ${esc(hpRoomOf({floor:g.f,x:g.x,y:g.y}).n)}</div></div></div>
+      <p class="hp-why">${esc(g.why)}</p>${g.group?`<div class="hp-ph-s">Grupa: ${esc(g.group)}</div>`:''}
+      <div class="sheet-actions"><button class="btn-ghost" onclick="hpClosePanel()">Zamknij</button><button class="btn-primary" onclick="hpAddGhost()">${ic('plus',16)} Dodaj do planu</button></div>
+      ${hpCatalogSecs(t)}`;
+  }else{
+    const p=HP.points.find(q=>q.id===HPS.sel);if(!p){hpClosePanel();return;}
+    const t=HP_T[p.type],c=hpCat(t.cat);
+    const groups=[...new Set(HP.points.filter(q=>q.type===p.type&&q.group).map(q=>q.group))];
+    pn.innerHTML=`<button class="sheet-xbtn" onclick="hpClosePanel()" aria-label="Zamknij">✕</button>
+      <div class="hp-ph"><span class="hp-dot" style="background:var(${c.css})">${esc(p.code)}</span><div><div class="hp-ph-t">${esc(p.code)} · ${esc(t.name)}</div>
+      <div class="hp-ph-s" id="hpPSub"></div></div></div>
+      <div class="field"><label for="hpNote">Opis</label><textarea id="hpNote" rows="2" maxlength="300" placeholder="np. nad stołem, 2 spoty" onchange="hpSetField('note',this.value)">${esc(p.note)}</textarea></div>
+      ${t.unit==='m'?`<div class="field"><label for="hpLen">Długość (m)</label><input id="hpLen" inputmode="decimal" autocomplete="off" value="${hpQtyFmt(p.len)}" onchange="hpSetField('len',this.value)"></div>`:''}
+      ${t.qtyLabel?`<div class="field"><label for="hpQty">${esc(t.qtyLabel)}</label><input id="hpQty" inputmode="numeric" autocomplete="off" value="${p.qty}" onchange="hpSetField('qty',this.value)"></div>`:''}
+      ${t.grouped?`<div class="field"><label for="hpGrp">${esc(t.groupLabel)}</label><input id="hpGrp" maxlength="40" autocomplete="off" list="hpGrpList" value="${esc(p.group)}" onchange="hpSetField('group',this.value)"><datalist id="hpGrpList">${groups.map(g=>`<option value="${esc(g)}"></option>`).join('')}</datalist></div>`:''}
+      <div id="hpPDyn"></div>
+      ${HPS.confirmDel?`<div class="hp-confirm">Usunąć punkt <strong>${esc(p.code)}</strong>? Nie można tego cofnąć.<div class="sheet-actions"><button class="btn-ghost" onclick="HPS.confirmDel=false;hpRenderPanel()">Anuluj</button><button class="btn-del" onclick="hpDeletePoint()">Usuń</button></div></div>`
+        :`<div class="sheet-actions"><button class="btn-ghost" onclick="hpStartMove()">${ic('move',16)} Przenieś</button><button class="btn-del" onclick="HPS.confirmDel=true;hpRenderPanel()">${ic('trash-2',16)} Usuń</button></div>`}
+      ${hpCatalogSecs(t)}`;
+    hpRenderPanelDyn();
+  }
+  pn.classList.add('open');document.getElementById('hp-ov').classList.add('panel');
+  lucide.createIcons({rootElement:pn});
+}
+function hpRenderPanelDyn(){
+  const p=HP.points.find(q=>q.id===HPS.sel),box=document.getElementById('hpPDyn');if(!p||!box)return;
+  const t=HP_T[p.type],c=hpCat(t.cat);
+  const sub=document.getElementById('hpPSub');if(sub)sub.textContent=c.name+' · '+hpFloorName(p.floor)+' · '+hpRoomOf(p).n;
+  const items=t.items(p),cost=items.reduce((a,it)=>a+it[1]*it[2],0);
+  const hints=hpPointHints(p);
+  box.innerHTML=(hints.length?`<div class="hp-sec" style="margin-top:4px">${hints.map(x=>`<div class="hp-hint">${ic('info',15)}<span>${esc(x)}</span></div>`).join('')}</div>`:'')
+    +(cost?`<div class="hp-cost">Urządzenia w punkcie: <b>${items.every(it=>HP_EXACT_PRICE.has(it[0]))?'':'ok. '}${money(cost)}</b></div>`:'');
+  lucide.createIcons({rootElement:box});
+}
+async function hpSetField(f,v){
+  const p=HP.points.find(x=>x.id===HPS.sel);if(!p)return;
+  let col=f,val;
+  if(f==='note')val=String(v).slice(0,300);
+  else if(f==='len'){
+    val=parseFloat(String(v).replace(/\s/g,'').replace(',','.'));
+    if(!isFinite(val)||val<0||val>200){showToast('Długość musi mieścić się w 0–200 m','err');document.getElementById('hpLen').value=hpQtyFmt(p.len);return;}
+    val=Math.round(val*100)/100;
+  }else if(f==='qty'){
+    val=parseInt(String(v).replace(/\s/g,''),10);
+    if(!(val>=1&&val<=999)){showToast('Ilość musi mieścić się w 1–999','err');document.getElementById('hpQty').value=p.qty;return;}
+  }else if(f==='group'){val=String(v).trim().slice(0,40);col='grp';}
+  else return;
+  if(p[f]===val)return;
+  const{error}=await sb.from('house_plan_points').update({[col]:val}).eq('id',p.id);
+  if(error){showToast('Błąd zapisu','err');return;}
+  p[f]=val;if(f==='group')HPS.lastGroup[p.type]=val;
+  if(f==='len'){const el=document.getElementById('hpLen');if(el)el.value=hpQtyFmt(val);}
+  hpRender();hpRenderPanelDyn();showToast('Zapisano','ok');
+}
+async function hpDeletePoint(){
+  const p=HP.points.find(x=>x.id===HPS.sel);if(!p)return;
+  const{error}=await sb.from('house_plan_points').delete().eq('id',p.id);
+  if(error){showToast('Błąd usuwania','err');return;}
+  HP.points=HP.points.filter(x=>x.id!==p.id);
+  hpClosePanel();showToast('Usunięto '+p.code,'ok');
+}
+async function hpAddGhost(){
+  const g=HP.sugg[HPS.ghost];if(!g)return;
+  const p=await hpAddPoint(g.type,g.f,g.x,g.y,g.group);
+  if(p)hpSelect(p.id);
+}
+
 function toggleVoice(){
   if(aiListening){aiManualStop=true;stopVoice();}
   else startVoice();
@@ -2406,7 +3180,7 @@ function initPullToRefresh(){
   const ptr=document.getElementById('ptr');
   document.addEventListener('touchstart',e=>{
     if(document.getElementById('modal').classList.contains('open'))return;
-    if(document.getElementById('ai-ov').classList.contains('open'))return;
+    if(document.getElementById('ai-ov').classList.contains('open')||document.getElementById('hp-ov').classList.contains('open'))return;
     startY=e.touches[0].clientY;startX=e.touches[0].clientX;
     pulling=window.scrollY===0;pullActive=false;
   },{passive:true});

@@ -119,3 +119,51 @@ alter table idea_facts    enable row level security;
 create policy "own_ideas"         on ideas         for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own_idea_messages" on idea_messages for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "own_idea_facts"    on idea_facts    for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ============================================================
+--  PLAN DOMU: punkty instalacji i prywatna konfiguracja
+--  (rzut domu i podpowiedzi wgrywa się osobno, nigdy nie do repo)
+-- ============================================================
+create table if not exists house_plan_points (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  type text not null check (type ~ '^[a-z]{1,20}$'),
+  floor text not null check (floor ~ '^[a-z0-9_-]{1,20}$'),
+  x double precision not null check (x between -50 and 50),
+  y double precision not null check (y between -50 and 50),
+  code text not null check (code ~ '^[A-Z]{1,3}[0-9]{1,3}$'),
+  note text not null default '' check (char_length(note) <= 300),
+  qty integer not null default 1 check (qty between 1 and 999),
+  len numeric(6, 2) not null default 0 check (len between 0 and 200),
+  grp text not null default '' check (char_length(grp) <= 40),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists house_plan_points_user_idx on house_plan_points (user_id);
+create or replace function house_plan_touch_updated_at()
+returns trigger language plpgsql security invoker set search_path = '' as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+create trigger house_plan_points_touch_updated_at
+  before update on house_plan_points for each row execute function house_plan_touch_updated_at();
+alter table house_plan_points enable row level security;
+revoke all on table house_plan_points from anon;
+create policy "Owner reads plan points"   on house_plan_points for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Owner adds plan points"    on house_plan_points for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Owner changes plan points" on house_plan_points for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Owner removes plan points" on house_plan_points for delete to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists house_plan_config (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  key text not null check (key ~ '^[a-z_]{1,40}$'),
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, key)
+);
+alter table house_plan_config enable row level security;
+revoke all on table house_plan_config from anon;
+revoke insert, update, delete, truncate on table house_plan_config from authenticated;
+create policy "Owner reads plan config" on house_plan_config for select to authenticated using ((select auth.uid()) = user_id);

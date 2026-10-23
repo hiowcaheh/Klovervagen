@@ -48,11 +48,11 @@ Nigdy nie aktualizuj UI bez zapisu w bazie i nigdy nie zostawiaj STATE rozjechan
 ### Nawigacja i render
 - `render(dir?)` — przerysowuje aktywny widok; `dir='left'|'right'` odpala animację slide przy swipe
 - `TAB_ORDER = ['dash','stages','todo','costs']` — kolejność swipe. **AI nie jest w tej tablicy**, a `activeTab` nigdy nie przyjmuje wartości `'ai'` — asystent to overlay nad aplikacją, nie zakładka.
-- Dolny pasek: grid 5 kolumn — Przegląd | Etapy | 🍀 Pomysły | Zadania | Wydatki
+- Dolny pasek: grid 5 kolumn — Przegląd | Etapy | 🍀 Plan domu | Zadania | Wydatki
 - `showToast(msg, type?)` z type `'ok' | 'err'` — jedyny kanał feedbacku; każda operacja zapisu kończy się toastem
 
 ### Kotwice do nawigacji po kodzie
-Plik jest duży — zanim coś zmienisz, znajdź i przeczytaj właściwy fragment (grep): `STATE`, `render(`, `showToast(`, `TAB_ORDER`, `activeTab`, `IX`, `sb.from(`, nazwy tabel, polskie teksty UI. Kod w scratchpadzie jest prawdą — nie edytuj z pamięci ani z założeń.
+Plik jest duży — zanim coś zmienisz, znajdź i przeczytaj właściwy fragment (grep): `STATE`, `render(`, `showToast(`, `TAB_ORDER`, `activeTab`, `HP`, `HPS`, `IX`, `sb.from(`, nazwy tabel, polskie teksty UI. Kod w scratchpadzie jest prawdą — nie edytuj z pamięci ani z założeń.
 
 ## 4. Baza danych (Supabase)
 
@@ -67,6 +67,8 @@ Projekt `rxmpyclpqgcxxwgnvgdz` (FirstChaos, plan Pro — dzielony z grą, ruszaj
 | `ideas` | id, user_id, title, icon (emoji), stage_id, status (`active/done`), last_snippet, tasks_added, shop_added, updated_at |
 | `idea_messages` | id, idea_id, user_id, role (`user/assistant`), content, raw (JSON odpowiedzi), image_path, meta (jsonb: fx, tasks, shop, products) |
 | `idea_facts` | id, idea_id, user_id, category, label, value, source (`ai/manual`), history (jsonb), updated_at |
+| `house_plan_points` | id, user_id, type (klucz z `HP_T`), floor, x, y (metry), code, note (≤300), qty (1–999), len (0–200), grp (≤40), updated_at (trigger) |
+| `house_plan_config` | user_id, key (`floorplan`/`suggestions`), data (jsonb) — tylko odczyt dla klienta, zapis wyłącznie przez SQL |
 
 Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą być puste — pozycje bez etapu). Przy zmianach logiki usuwania etapów najpierw sprawdź w kodzie, jak obsługiwane są powiązane zadania i wydatki.
 
@@ -87,7 +89,8 @@ Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą by�
 6. **Wydatki** — CRUD, 4 kategorie, filtrowanie 2-poziomowe (etap + kategoria), upload zdjęć/PDF; kompresja zdjęć: canvas → JPEG, max 1080 px, max ~300 KB
 7. **Galeria domu** — zdjęcia z `paragony/{user_id}/galeria/`, siatka 2 kolumny, pinch-zoom
 8. **Ustawienia** — nazwa domu (tabela `settings`), klucz Claude API (localStorage `claude_key`), odłączenie bazy
-9. **Pomysły 🍀** — sekcja 6
+9. **Plan domu 🍀** — sekcja 6a (pod koniczyną)
+10. **Pomysły** — sekcja 6, obecnie ukryte (kod zostaje, `openAI()` nie jest podpięte)
 
 ## 6. Pomysły 🍀 (moduł AI)
 
@@ -101,6 +104,15 @@ Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą by�
 - Skanowanie paragonów (`scanReceipt`): `claude-haiku-5-5`, effort `low`, structured output `{title, amount, date}`.
 - Koszt dnia liczony w `trackTokens(usage, model)` → localStorage `claude_tok_YYYY-MM-DD` (`c` = USD), widoczny w nagłówku listy pomysłów.
 - Głos (Web Speech API): `continuous = true`; klik = start nagrywania, drugi klik = stop **i wysłanie**. Nigdy auto-send po ciszy.
+
+## 6a. Plan domu 🍀 (planer instalacji smart home)
+
+- Overlay `#hp-ov` (`z-index: 55`), otwierany koniczyną (`openPlan()`). Stan: `HP` (dane: plan, sugg, points) i `HPS` (UI: floor, tab, cats, adding, moving, sel, ghost). Funkcje z prefiksem `hp`.
+- Katalog typów `HP_T` + `HP_CATS` (kolory w zmiennych `--c-*`) to ogólne treści i ceny — źródło prawdy dla listy zakupów i tekstu dla elektryka. Czysta logika: `hpPsuFor`, `hpShoppingList`, `hpPointHints`, `hpGlobalHints`, `hpRoomOf`, `hpNextCode`, `hpGhostVisible`.
+- **Repo jest publiczne: rzutu domu i podpowiedzi NIGDY nie commituj.** Leżą w `house_plan_config` (klucze `floorplan`, `suggestions`) dla konta Mateusza i zmienia się je tylko przez SQL.
+- Dostęp jak w całej aplikacji: RLS `user_id = auth.uid()`; baza jest dzielona z grą, więc „każdy zalogowany” nie wystarczy.
+- Dane z bazy są walidowane (`hpValidPlan`, `hpFromRow`), tekst zawsze przez `esc()`. Pola punktu zapisują się na `change`.
+- Zakładki: Rzut (SVG w metrach, `getScreenCTM().inverse()`, zaokrąglenie 0,05 m), Lista zakupów, Pokój po pokoju, Till elektrikern, Co możesz zrobić. Panel punktu: arkusz od dołu (< 900 px) albo kolumna z prawej.
 
 ## 7. Design system
 
