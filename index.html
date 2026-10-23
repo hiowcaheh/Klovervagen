@@ -409,8 +409,8 @@
   .hp-kpi.wide .v{color:var(--accent)}
   .hp-kpi .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-top:2px;line-height:1.25}
   .hp-tools{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;align-items:stretch}
-  .hp-tools .seg{flex:1 1 100%;min-width:0}
-  .hp-tools .hp-tbtn{flex:1;justify-content:center}
+  .hp-tools .seg{flex:1 1 200px;min-width:0}
+  .hp-tools .hp-tbtn{flex:0 0 auto;justify-content:center}
   .hp-tools .seg button{padding:9px 4px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hp-tbtn{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:0 10px;
     font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap;min-height:42px}
@@ -421,30 +421,36 @@
     font-size:12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;min-height:36px}
   .hp-chip i{width:9px;height:9px;border-radius:50%;display:block;flex-shrink:0}
   .hp-chip.off{opacity:.4;text-decoration:line-through}
-  .hp-mapwrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:auto;-webkit-overflow-scrolling:touch}
-  .hp-map{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
-  .hp-mapwrap.zoom .hp-map{width:240%}
+  .hp-mapwrap{position:relative;width:100%;max-height:60vh;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;touch-action:none;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  .hp-map{display:block;width:100%;height:100%;touch-action:none}
+  .hp-map *{vector-effect:non-scaling-stroke}
   .hp-mapwrap.pick .hp-map{cursor:crosshair}
+  .hp-fit{position:absolute;top:8px;right:8px;z-index:2;width:42px;height:42px;border-radius:12px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--ink);display:none;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+  .hp-mapwrap.zoomed .hp-fit{display:grid}
+  .hp-scale{position:absolute;left:10px;bottom:8px;display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:11px;font-weight:700;color:var(--ink);pointer-events:none}
+  .hp-scale i{display:block;height:6px;border:2px solid var(--ink);border-top:none}
+  .hp-gest{font-size:11.5px;color:var(--muted);text-align:center;margin-top:6px;line-height:1.4}
   .hp-banner{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:10px;background:var(--accent);color:#1a0f06;
     border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.35;margin-bottom:8px;box-shadow:0 6px 18px rgba(0,0,0,.4)}
   .hp-banner button{margin-left:auto;background:var(--bg);color:var(--ink);border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;flex-shrink:0}
-  .hp-o{fill:var(--panel-2);stroke:var(--hp-wall);stroke-width:.12;stroke-linejoin:round}
-  .hp-r{fill:none;stroke:var(--hp-thin);stroke-width:.04}
-  .hp-z{fill:none;stroke:var(--muted);stroke-width:.04;stroke-dasharray:.22 .14}
-  .hp-f{fill:rgba(242,234,219,.06);stroke:var(--hp-thin);stroke-width:.03}
-  .hp-st{fill:none;stroke:var(--hp-thin);stroke-width:.03}
-  .hp-w{stroke:var(--blue);stroke-width:.17}
-  .hp-g{stroke:var(--accent);stroke-width:.08;stroke-dasharray:.25 .15}
+  .hp-o{fill:var(--panel-2);stroke:var(--hp-wall);stroke-width:3px;stroke-linejoin:round}
+  .hp-r{fill:none;stroke:var(--hp-thin);stroke-width:1px}
+  .hp-z{fill:none;stroke:var(--muted);stroke-width:1.2px;stroke-dasharray:6 4}
+  .hp-f{fill:rgba(242,234,219,.06);stroke:var(--hp-thin);stroke-width:1px}
+  .hp-st{fill:none;stroke:var(--hp-thin);stroke-width:1px}
+  .hp-w{stroke:var(--blue);stroke-width:4.5px}
+  .hp-g{stroke:var(--accent);stroke-width:2px;stroke-dasharray:7 4}
   .hp-l{fill:var(--muted);font-weight:600;text-anchor:middle;dominant-baseline:central}
-  .hp-sc{stroke:var(--ink);stroke-width:.06}
-  .hp-sct{fill:var(--ink);font-weight:600;text-anchor:middle}
   .hp-pt,.hp-gh{cursor:pointer}
   .hp-pt text{fill:var(--hp-marker-ink);font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-  .hp-pt .m{stroke:var(--bg);stroke-width:.05}
-  .hp-pt.sel .m{stroke:var(--ink);stroke-width:.1}
-  .hp-gh .m{fill:rgba(15,13,10,.6);stroke-width:.06;stroke-dasharray:.13 .09}
+  .hp-pt .m{stroke:var(--bg);stroke-width:1.4px}
+  .hp-pt.sel .m{stroke:var(--ink);stroke-width:2.8px}
+  .hp-gh .m{fill:rgba(15,13,10,.6);stroke-width:1.6px;stroke-dasharray:4 3}
   .hp-gh text{font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-  .hp-gh.sel .m{stroke-width:.1;stroke-dasharray:none}
+  .hp-gh.sel .m{stroke-width:2.8px;stroke-dasharray:none}
   .hp-hit{fill:transparent}
   .hp-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
   .hp-h3{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin:0 0 8px;display:flex;align-items:center;gap:7px}
@@ -514,6 +520,7 @@
     .hp-panel.open{transform:translateX(0)}
     #hp-ov.panel .hp-body{padding-right:404px;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
     #hp-ov.panel .hp-addbtn{right:406px}
+    .hp-mapwrap{max-height:76vh;max-width:calc(76vh * var(--ar,1));margin:0 auto}
   }
 
   /* ===== SEARCH / SORT ===== */
@@ -2635,7 +2642,7 @@ Object.keys(HP_T).forEach(k=>{HP_T[k].id=k;});
 const HP_EXACT_PRICE=new Set(['HomePod mini 2']);
 
 const HP={plan:null,sugg:[],points:[],loaded:false,error:false};
-const HPS={floor:'main',tab:'plan',cats:{},ghosts:true,zoom:false,adding:null,moving:false,sel:null,ghost:null,confirmDel:false,busy:false,lastGroup:{}};
+const HPS={floor:'main',tab:'plan',cats:{},ghosts:true,view:{z:1,cx:null,cy:null},adding:null,moving:false,sel:null,ghost:null,confirmDel:false,busy:false,lastGroup:{}};
 HP_CATS.forEach(c=>{HPS.cats[c.id]=true;});
 
 function hpNum(v,min,max,def){const n=Number(v);return isFinite(n)&&n>=min&&n<=max?n:def;}
@@ -2810,7 +2817,7 @@ function hpQtyFmt(n){return Number(n).toLocaleString('pl-PL',{maximumFractionDig
 function hpRender(){
   const body=document.getElementById('hpBody');if(!body)return;
   const ov=document.getElementById('hp-ov');
-  const st=body.scrollTop,mw=document.querySelector('#hpBody .hp-mapwrap'),ml=mw?mw.scrollLeft:0,mt=mw?mw.scrollTop:0;
+  const st=body.scrollTop;
   const shop=hpShoppingList(),total=shop.reduce((a,l)=>a+l.qty*l.price,0);
   document.getElementById('hpSub').textContent=HP.loaded&&HP.plan?plPl(HP.points.length,'punkt','punkty','punktów')+' · ok. '+money(total):'Instalacje smart home';
   document.getElementById('hpAdd').style.display=HP.loaded&&HP.plan&&HPS.tab==='plan'&&!HPS.adding&&!HPS.moving?'':'none';
@@ -2834,7 +2841,7 @@ function hpRender(){
   body.innerHTML=h;
   lucide.createIcons({rootElement:body});
   body.scrollTop=st;
-  const mw2=document.querySelector('#hpBody .hp-mapwrap');if(mw2){mw2.scrollLeft=ml;mw2.scrollTop=mt;}
+  if(HPS.tab==='plan')hpBindMap();
 }
 function hpSetTab(t){HPS.tab=t;HPS.adding=null;HPS.moving=false;hpClosePanel(true);hpRender();document.getElementById('hpBody').scrollTop=0;}
 function hpPlanTab(){
@@ -2843,21 +2850,23 @@ function hpPlanTab(){
   if(HPS.moving){const p=HP.points.find(x=>x.id===HPS.sel);h+=`<div class="hp-banner">${ic('move',16)}<span>Dotknij nowego miejsca dla ${esc(p?p.code:'')}.</span><button onclick="hpCancelMove()">Anuluj</button></div>`;}
   const order=hpPlanOrder();
   h+=`<div class="hp-tools">${order.length>1?`<div class="seg">${order.map(k=>`<button class="${HPS.floor===k?'on':''}" onclick="hpSetFloor('${esc(k)}')">${esc(hpFloorName(k))}</button>`).join('')}</div>`:''}
-    <button class="hp-tbtn${HPS.zoom?' on':''}" onclick="HPS.zoom=!HPS.zoom;hpRender()" aria-pressed="${HPS.zoom}">${ic(HPS.zoom?'zoom-out':'zoom-in',15)}${HPS.zoom?'Pomniejsz':'Powiększ'}</button>
     <button class="hp-tbtn${HPS.ghosts?' on':''}" onclick="HPS.ghosts=!HPS.ghosts;if(!HPS.ghosts&&HPS.ghost!==null)hpClosePanel(true);hpRender()" aria-pressed="${HPS.ghosts}">${ic('sparkles',15)}Podpowiedzi</button></div>
     <div class="hp-chips">${HP_CATS.map(c=>`<button class="hp-chip${HPS.cats[c.id]?'':' off'}" onclick="hpToggleCat('${c.id}')" aria-pressed="${!!HPS.cats[c.id]}"><i style="background:var(${c.css})"></i>${esc(c.name)}</button>`).join('')}</div>
-    <div class="hp-mapwrap${HPS.zoom?' zoom':''}${HPS.adding||HPS.moving?' pick':''}">${hpSvg()}</div>
+    <div class="hp-mapwrap${HPS.view.z>1.01?' zoomed':''}${HPS.adding||HPS.moving?' pick':''}" style="aspect-ratio:${hpN(HP.plan.viewBox[2])}/${hpN(HP.plan.viewBox[3])};--ar:${hpN(HP.plan.viewBox[2]/HP.plan.viewBox[3])}">${hpSvg()}
+      <button class="hp-fit" onclick="hpFit()" aria-label="Pokaż cały plan">${ic('maximize',18)}</button>
+      <div class="hp-scale" id="hpScale"><i></i><span></span></div></div>
+    <div class="hp-gest">Przesuwaj jednym palcem, przybliżaj dwoma. Dwa szybkie dotknięcia: przybliż lub pokaż całość.</div>
     <div class="hp-card"><div class="hp-h3">${ic('lightbulb',13)}Podpowiedzi do planu</div>${hpGlobalHints().map(x=>`<div class="hp-hint">${ic('info',15)}<span>${esc(x)}</span></div>`).join('')}</div>`;
   return h;
 }
 function hpN(v){const n=Number(v);return isFinite(n)?Math.round(n*1000)/1000:0;}
-function hpText(x,y,str,size,rot,cls){
-  return`<text class="${cls||'hp-l'}" x="${hpN(x)}" y="${hpN(y)}" font-size="${size}"${rot?` transform="rotate(-90 ${hpN(x)} ${hpN(y)})"`:''}>${esc(str)}</text>`;
+function hpText(x,y,str,size,rot){
+  return`<g class="hp-lb" data-x="${hpN(x)}" data-y="${hpN(y)}" transform="translate(${hpN(x)} ${hpN(y)})"><text class="hp-l" x="0" y="0" font-size="${size}"${rot?' transform="rotate(-90)"':''}>${esc(str)}</text></g>`;
 }
 function hpSvg(){
   const P=HP.plan,fl=hpF(HPS.floor);if(!fl)return'';
   const[vx,vy,vw,vh]=P.viewBox;
-  let s=`<svg class="hp-map" id="hpSvg" viewBox="${hpN(vx)} ${hpN(vy)} ${hpN(vw)} ${hpN(vh)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rzut: ${esc(fl.name)}" onclick="hpMapClick(event)">`;
+  let s=`<svg class="hp-map" id="hpSvg" viewBox="${hpN(vx)} ${hpN(vy)} ${hpN(vw)} ${hpN(vh)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rzut: ${esc(fl.name)}">`;
   if(P.outline.length)s+=`<polygon class="hp-o" points="${P.outline.map(q=>hpN(q[0])+','+hpN(q[1])).join(' ')}"/>`;
   fl.outside.forEach(o=>{
     s+=`<rect class="hp-z" x="${hpN(o.x)}" y="${hpN(o.y)}" width="${hpN(o.w)}" height="${hpN(o.h)}"/>`;
@@ -2892,22 +2901,19 @@ function hpSvg(){
     const lx=isFinite(+r.lx)?+r.lx:(r.poly?r.poly[0][0]:+r.x+ +r.w/2),ly=isFinite(+r.ly)?+r.ly:(r.poly?r.poly[0][1]:+r.y+ +r.h/2);
     s+=hpText(lx,ly,label,r.sm?0.28:0.36,!!r.rot);
   });
-  const sx=vx+0.4,sy=vy+vh-0.45;
-  s+=`<line class="hp-sc" x1="${hpN(sx)}" y1="${hpN(sy)}" x2="${hpN(sx+5)}" y2="${hpN(sy)}"/><line class="hp-sc" x1="${hpN(sx)}" y1="${hpN(sy-0.15)}" x2="${hpN(sx)}" y2="${hpN(sy+0.15)}"/><line class="hp-sc" x1="${hpN(sx+5)}" y1="${hpN(sy-0.15)}" x2="${hpN(sx+5)}" y2="${hpN(sy+0.15)}"/>`;
-  s+=`<text class="hp-sct" x="${hpN(sx+2.5)}" y="${hpN(sy-0.22)}" font-size="0.3">5 m</text>`;
   HP.sugg.forEach((g,i)=>{
     if(!hpGhostVisible(g))return;
     const t=HP_T[g.type],c=hpCat(t.cat);
-    s+=`<g class="hp-gh${HPS.ghost===i?' sel':''}" data-gi="${i}"><circle class="hp-hit" cx="${hpN(g.x)}" cy="${hpN(g.y)}" r="0.6"/>
-      <circle class="m" cx="${hpN(g.x)}" cy="${hpN(g.y)}" r="0.32" style="stroke:var(${c.css})"/>
-      <text x="${hpN(g.x)}" y="${hpN(g.y)}" font-size="${t.p.length>1?0.22:0.28}" style="fill:var(${c.css})">${esc(t.p)}</text></g>`;
+    s+=`<g class="hp-gh hp-mk${HPS.ghost===i?' sel':''}" data-gi="${i}" data-x="${hpN(g.x)}" data-y="${hpN(g.y)}" transform="translate(${hpN(g.x)} ${hpN(g.y)})"><circle class="hp-hit" r="0.6"/>
+      <circle class="m" r="0.32" style="stroke:var(${c.css})"/>
+      <text x="0" y="0" font-size="${t.p.length>1?0.22:0.28}" style="fill:var(${c.css})">${esc(t.p)}</text></g>`;
   });
   HP.points.forEach(p=>{
     if(p.floor!==HPS.floor||!HPS.cats[HP_T[p.type].cat])return;
     const c=hpCat(HP_T[p.type].cat),fs=p.code.length<=2?0.3:p.code.length===3?0.25:0.2;
-    s+=`<g class="hp-pt${HPS.sel===p.id?' sel':''}" data-pid="${esc(p.id)}"><circle class="hp-hit" cx="${hpN(p.x)}" cy="${hpN(p.y)}" r="0.6"/>
-      <circle class="m" cx="${hpN(p.x)}" cy="${hpN(p.y)}" r="0.36" style="fill:var(${c.css})"/>
-      <text x="${hpN(p.x)}" y="${hpN(p.y)}" font-size="${fs}">${esc(p.code)}</text></g>`;
+    s+=`<g class="hp-pt hp-mk${HPS.sel===p.id?' sel':''}" data-pid="${esc(p.id)}" data-x="${hpN(p.x)}" data-y="${hpN(p.y)}" transform="translate(${hpN(p.x)} ${hpN(p.y)})"><circle class="hp-hit" r="0.6"/>
+      <circle class="m" r="0.36" style="fill:var(${c.css})"/>
+      <text x="0" y="0" font-size="${fs}">${esc(p.code)}</text></g>`;
   });
   return s+'</svg>';
 }
@@ -2999,18 +3005,135 @@ function hpSvgPoint(svg,e){
   const r=v=>Math.max(-50,Math.min(50,Math.round(Math.round(v/0.05)*0.05*100)/100));
   return{x:r(q.x),y:r(q.y)};
 }
-function hpMapClick(e){
+const HP_ZMAX=6;
+const HPG={ptrs:new Map(),tap:null,multi:false,g:null,lastTap:null};
+function hpGeom(){
+  const wrap=document.querySelector('#hpBody .hp-mapwrap'),svg=document.getElementById('hpSvg');
+  if(!wrap||!svg||!HP.plan)return null;
+  const W=svg.clientWidth,H=svg.clientHeight;if(!W||!H)return null;
+  const[vx,vy,vw,vh]=HP.plan.viewBox,a=W/H;
+  const base=vw/vh>a?{x:vx,y:vy-(vw/a-vh)/2,w:vw,h:vw/a}:{x:vx-(vh*a-vw)/2,y:vy,w:vh*a,h:vh};
+  return{wrap,svg,W,H,base};
+}
+function hpClampView(g){
+  const V=HPS.view,b=g.base;
+  V.z=Math.min(HP_ZMAX,Math.max(1,Number(V.z)||1));
+  const w=b.w/V.z,h=b.h/V.z;
+  if(V.cx==null||V.cy==null){V.cx=b.x+b.w/2;V.cy=b.y+b.h/2;}
+  V.cx=Math.min(b.x+b.w-w/2,Math.max(b.x+w/2,V.cx));
+  V.cy=Math.min(b.y+b.h-h/2,Math.max(b.y+h/2,V.cy));
+  return{x:V.cx-w/2,y:V.cy-h/2,w,h};
+}
+function hpApplyView(){
+  const g=hpGeom();if(!g)return;
+  const v=hpClampView(g),z=HPS.view.z,km=Math.pow(z,-0.5).toFixed(4),kt=Math.pow(z,-0.6).toFixed(4);
+  g.svg.setAttribute('viewBox',[v.x,v.y,v.w,v.h].map(n=>Math.round(n*10000)/10000).join(' '));
+  g.svg.querySelectorAll('.hp-mk').forEach(el=>el.setAttribute('transform',`translate(${el.dataset.x} ${el.dataset.y}) scale(${km})`));
+  g.svg.querySelectorAll('.hp-lb').forEach(el=>el.setAttribute('transform',`translate(${el.dataset.x} ${el.dataset.y}) scale(${kt})`));
+  g.wrap.classList.toggle('zoomed',z>1.01);
+  const sc=document.getElementById('hpScale');
+  if(sc){
+    const ppm=g.W/v.w,L=[5,2,1,0.5,0.2].find(l=>l*ppm<=g.W*0.4)||0.2;
+    sc.querySelector('i').style.width=Math.round(L*ppm)+'px';
+    sc.querySelector('span').textContent=String(L).replace('.',',')+' m';
+  }
+}
+function hpFit(){HPS.view={z:1,cx:null,cy:null};hpApplyView();}
+function hpBindMap(){
+  const wrap=document.querySelector('#hpBody .hp-mapwrap');if(!wrap)return;
+  HPG.ptrs.clear();HPG.tap=null;HPG.g=null;
+  wrap.addEventListener('pointerdown',hpPDown);
+  wrap.addEventListener('pointermove',hpPMove);
+  wrap.addEventListener('pointerup',hpPUp);
+  wrap.addEventListener('pointercancel',hpPUp);
+  wrap.addEventListener('wheel',hpWheel,{passive:false});
+  wrap.addEventListener('gesturestart',e=>e.preventDefault());
+  wrap.addEventListener('touchmove',e=>{if(!e.target.closest('.hp-fit'))e.preventDefault();},{passive:false});
+  hpApplyView();
+}
+function hpGestureStart(g){
+  const pts=[...HPG.ptrs.values()],r=g.svg.getBoundingClientRect(),v=hpClampView(g);
+  const m=pts.length>1?{x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2}:pts[0];
+  HPG.g={r,z:HPS.view.z,base:g.base,d:pts.length>1?Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y):0,
+    px:v.x+(m.x-r.left)/r.width*v.w,py:v.y+(m.y-r.top)/r.height*v.h};
+}
+function hpPDown(e){
+  if(e.target.closest('.hp-fit')||(e.pointerType==='mouse'&&e.button!==0))return;
+  const g=hpGeom();if(!g)return;
+  try{g.wrap.setPointerCapture(e.pointerId);}catch(_){}
+  HPG.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(HPG.ptrs.size===1){HPG.tap={x:e.clientX,y:e.clientY,t:Date.now(),target:e.target};HPG.multi=false;}
+  else{HPG.tap=null;HPG.multi=true;}
+  hpGestureStart(g);
+}
+function hpPMove(e){
+  if(!HPG.ptrs.has(e.pointerId))return;
+  HPG.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(HPG.tap){if(Math.hypot(e.clientX-HPG.tap.x,e.clientY-HPG.tap.y)<=8)return;HPG.tap=null;}
+  const s=HPG.g;if(!s)return;
+  const pts=[...HPG.ptrs.values()];
+  const m=pts.length>1?{x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2}:pts[0];
+  let z=s.z;
+  if(pts.length>1&&s.d>0)z=s.z*Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)/s.d;
+  z=Math.min(HP_ZMAX,Math.max(1,z));
+  const w=s.base.w/z,h=s.base.h/z;
+  HPS.view.z=z;
+  HPS.view.cx=s.px-(m.x-s.r.left)/s.r.width*w+w/2;
+  HPS.view.cy=s.py-(m.y-s.r.top)/s.r.height*h+h/2;
+  hpApplyView();
+  e.preventDefault();
+}
+function hpPUp(e){
+  if(!HPG.ptrs.has(e.pointerId))return;
+  HPG.ptrs.delete(e.pointerId);
+  const tap=HPG.tap;HPG.tap=null;
+  if(HPG.ptrs.size){const g=hpGeom();if(g)hpGestureStart(g);return;}
+  HPG.g=null;
+  if(e.type==='pointercancel'||!tap||HPG.multi||Date.now()-tap.t>700)return;
+  hpTap(e.clientX,e.clientY,tap.target);
+}
+function hpWheel(e){
+  const g=hpGeom();if(!g)return;
+  if(HPS.view.z<=1.001&&e.deltaY>0&&!e.ctrlKey)return;
+  e.preventDefault();
+  const r=g.svg.getBoundingClientRect(),v=hpClampView(g);
+  const px=v.x+(e.clientX-r.left)/r.width*v.w,py=v.y+(e.clientY-r.top)/r.height*v.h;
+  const z=Math.min(HP_ZMAX,Math.max(1,HPS.view.z*Math.exp(-e.deltaY*(e.ctrlKey?0.01:0.0015))));
+  const w=g.base.w/z,h=g.base.h/z;
+  HPS.view.z=z;HPS.view.cx=px-(e.clientX-r.left)/r.width*w+w/2;HPS.view.cy=py-(e.clientY-r.top)/r.height*h+h/2;
+  hpApplyView();
+}
+function hpDoubleTap(cx,cy){
+  const g=hpGeom();if(!g)return;
+  if(HPS.view.z>1.5)HPS.view.z=1;
+  else{
+    const r=g.svg.getBoundingClientRect(),v=hpClampView(g);
+    HPS.view.z=2.5;HPS.view.cx=v.x+(cx-r.left)/r.width*v.w;HPS.view.cy=v.y+(cy-r.top)/r.height*v.h;
+  }
+  hpApplyView();
+}
+function hpTap(cx,cy,target){
   const svg=document.getElementById('hpSvg');if(!svg)return;
   if(HPS.adding||HPS.moving){
-    const pt=hpSvgPoint(svg,e);if(!pt)return;
+    HPG.lastTap=null;
+    const pt=hpSvgPoint(svg,{clientX:cx,clientY:cy});if(!pt)return;
     if(HPS.adding)hpAddPoint(HPS.adding,HPS.floor,pt.x,pt.y,HP_T[HPS.adding].grouped?(HPS.lastGroup[HPS.adding]||''):'');
     else hpMovePoint(pt.x,pt.y);
     return;
   }
-  const g=e.target.closest('[data-pid],[data-gi]');
-  if(!g){if(HPS.sel||HPS.ghost!==null)hpClosePanel();return;}
-  if(g.dataset.pid)hpSelect(g.dataset.pid);else hpSelectGhost(Number(g.dataset.gi));
+  const mk=target&&target.closest?target.closest('[data-pid],[data-gi]'):null;
+  const now=Date.now(),lt=HPG.lastTap;
+  if(!mk&&lt&&now-lt.t<350&&Math.hypot(cx-lt.x,cy-lt.y)<30){HPG.lastTap=null;hpDoubleTap(cx,cy);return;}
+  HPG.lastTap=mk?null:{t:now,x:cx,y:cy};
+  if(!mk){if(HPS.sel||HPS.ghost!==null)hpClosePanel();return;}
+  if(mk.dataset.pid)hpSelect(mk.dataset.pid);else hpSelectGhost(Number(mk.dataset.gi));
 }
+function hpEnsureVisible(x,y){
+  const g=hpGeom();if(!g||HPS.view.z<=1.01)return;
+  const v=hpClampView(g),mx=v.w*0.12,my=v.h*0.12;
+  if(x<v.x+mx||x>v.x+v.w-mx||y<v.y+my||y>v.y+v.h-my){HPS.view.cx=x;HPS.view.cy=y;hpApplyView();}
+}
+window.addEventListener('resize',()=>{if(document.getElementById('hp-ov')?.classList.contains('open'))hpApplyView();});
 async function hpAddPoint(type,floor,x,y,group){
   const t=HP_T[type];if(!t||HPS.busy)return null;
   HPS.busy=true;
@@ -3037,12 +3160,12 @@ function hpSelect(id){
   const p=HP.points.find(q=>q.id===id);if(!p)return;
   HPS.sel=id;HPS.ghost=null;HPS.confirmDel=false;
   if(p.floor!==HPS.floor)HPS.floor=p.floor;
-  hpRender();hpRenderPanel();hpRevealMarker('[data-pid="'+id+'"]');
+  hpRender();hpEnsureVisible(p.x,p.y);hpRenderPanel();hpRevealMarker('[data-pid="'+id+'"]');
 }
 function hpSelectGhost(i){
   if(!HP.sugg[i])return;
   HPS.ghost=i;HPS.sel=null;HPS.confirmDel=false;
-  hpRender();hpRenderPanel();hpRevealMarker('[data-gi="'+i+'"]');
+  hpRender();hpEnsureVisible(HP.sugg[i].x,HP.sugg[i].y);hpRenderPanel();hpRevealMarker('[data-gi="'+i+'"]');
 }
 function hpRevealMarker(sel){
   const el=document.querySelector('#hpSvg '+sel),body=document.getElementById('hpBody');if(!el||!body)return;

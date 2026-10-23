@@ -112,6 +112,7 @@ Relacje: `todos.stage_id` i `costs.stage_id` wskazują na `stages.id` (mogą by�
 - **Repo jest publiczne: rzutu domu i podpowiedzi NIGDY nie commituj.** Leżą w `house_plan_config` (klucze `floorplan`, `suggestions`) dla konta Mateusza i zmienia się je tylko przez SQL.
 - Dostęp jak w całej aplikacji: RLS `user_id = auth.uid()`; baza jest dzielona z grą, więc „każdy zalogowany” nie wystarczy.
 - Dane z bazy są walidowane (`hpValidPlan`, `hpFromRow`), tekst zawsze przez `esc()`. Pola punktu zapisują się na `change`.
+- Gesty na rzucie (pointer events, `touch-action:none`, nie przewijają aplikacji): 1 palec przesuwa, 2 palce przybliżają (1–6×), dwa dotknięcia przybliżają/pokazują całość, kółko myszy. Zoom = zmiana `viewBox` (`HPS.view` {z,cx,cy}, `hpApplyView`), markery i napisy skalowane `z^-0.5`/`z^-0.6`, linie `vector-effect:non-scaling-stroke`, skala HTML dobierana do przybliżenia. Tapnięcia obsługuje `hpTap` (nie `onclick`).
 - Zakładki: Rzut (SVG w metrach, `getScreenCTM().inverse()`, zaokrąglenie 0,05 m), Lista zakupów, Pokój po pokoju, Till elektrikern, Co możesz zrobić. Panel punktu: arkusz od dołu (< 900 px) albo kolumna z prawej.
 
 ## 7. Design system
